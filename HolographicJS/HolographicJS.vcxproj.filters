@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>12212108-bc92-4875-93ec-1076c0a4c4d5</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Runtime">
+      <UniqueIdentifier>{598c5112-830f-4248-b716-e90c6d1dbb1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Runtime\Globals">
+      <UniqueIdentifier>{4f606350-8aa2-4c8c-a513-6970ef97ef28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Runtime\Globals\Window">
+      <UniqueIdentifier>{9ae836ee-3a7c-4442-b8bd-934271eebc64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Runtime\Globals\Window\Document">
+      <UniqueIdentifier>{1b2bcb71-7f2b-43d6-b35c-5b4f701f31ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Binaries">
+      <UniqueIdentifier>{4b244ac7-a2c5-4fa2-a2a6-a6f0c5f94256}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Console.cpp">
+      <Filter>Runtime\Globals</Filter>
+    </ClCompile>
+    <ClCompile Include="SetTimeout.cpp">
+      <Filter>Runtime\Globals</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Runtime\Globals</Filter>
+    </ClCompile>
+    <ClCompile Include="CanvasRenderingContextHolographic.cpp">
+      <Filter>Runtime\Globals\Window\Document</Filter>
+    </ClCompile>
+    <ClCompile Include="Host.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Engine.h" />
+    <ClInclude Include="Console.h">
+      <Filter>Runtime\Globals</Filter>
+    </ClInclude>
+    <ClInclude Include="SetTimeout.h">
+      <Filter>Runtime\Globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Runtime\Globals</Filter>
+    </ClInclude>
+    <ClInclude Include="CanvasRenderingContextHolographic.h">
+      <Filter>Runtime\Globals\Window\Document</Filter>
+    </ClInclude>
+    <ClInclude Include="Host.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libEGL.dll">
+      <Filter>Binaries</Filter>
+    </None>
+    <None Include="libGLESv2.dll">
+      <Filter>Binaries</Filter>
+    </None>
+  </ItemGroup>
+</Project>
