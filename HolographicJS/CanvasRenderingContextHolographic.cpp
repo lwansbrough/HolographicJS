@@ -175,3 +175,7 @@ void CanvasRenderingContextHolographic::CreateContext() {
 		throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
 	}
 }
+
+void CanvasRenderingContextHolographic::DeleteBuffer(GLuint buffer) {
+	OutputDebugString(buffer.ToString()->Data());
+}
