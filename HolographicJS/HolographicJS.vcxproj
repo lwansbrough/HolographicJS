@@ -131,6 +131,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>C:\Users\Lochlan\Documents\angle\winrt\10\src\Debug_Win32\obj;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>C:\Users\Lochlan\Documents\angle\winrt\10\src\Debug_Win32\lib\libGLESv2.lib;C:\Users\Lochlan\Documents\angle\winrt\10\src\Debug_Win32\lib\libEGL.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
