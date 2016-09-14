@@ -214,6 +214,7 @@
     <ClInclude Include="CanvasRenderingContextHolographic.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Host.h" />
+    <ClInclude Include="WebGLActiveInfo.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Engine.h" />
@@ -223,6 +224,7 @@
     <ClCompile Include="CanvasRenderingContextHolographic.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Host.cpp" />
+    <ClCompile Include="WebGLActiveInfo.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -122,12 +122,7 @@ void App::Run()
     {
         if (mWindowVisible)
         {
-            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-
-            EGLint panelWidth = 0;
-            EGLint panelHeight = 0;
-            eglQuerySurface(mEglDisplay, mEglSurface, EGL_WIDTH, &panelWidth);
-            eglQuerySurface(mEglDisplay, mEglSurface, EGL_HEIGHT, &panelHeight);
+			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
         }
         else
         {

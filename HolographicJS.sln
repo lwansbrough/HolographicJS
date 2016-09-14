@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HolographicJS", "HolographicJS\HolographicJS.vcxproj", "{824B71C2-BB39-4B7A-BA4B-BD76C3DF5172}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HolographicJSTest", "HolographicJSTest\HolographicJSTest.vcxproj", "{1081902A-A73E-4C7B-9CA1-75675D7A87A2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{824B71C2-BB39-4B7A-BA4B-BD76C3DF5172} = {824B71C2-BB39-4B7A-BA4B-BD76C3DF5172}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

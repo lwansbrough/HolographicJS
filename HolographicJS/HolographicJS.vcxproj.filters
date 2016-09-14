@@ -20,6 +20,9 @@
     <Filter Include="Binaries">
       <UniqueIdentifier>{4b244ac7-a2c5-4fa2-a2a6-a6f0c5f94256}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Runtime\Globals\Window\Document\WebGL">
+      <UniqueIdentifier>{ff330e22-d3fd-4456-9282-f18a2842bb0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -37,6 +40,9 @@
       <Filter>Runtime\Globals\Window\Document</Filter>
     </ClCompile>
     <ClCompile Include="Host.cpp" />
+    <ClCompile Include="WebGLActiveInfo.cpp">
+      <Filter>Runtime\Globals\Window\Document\WebGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -54,6 +60,9 @@
       <Filter>Runtime\Globals\Window\Document</Filter>
     </ClInclude>
     <ClInclude Include="Host.h" />
+    <ClInclude Include="WebGLActiveInfo.h">
+      <Filter>Runtime\Globals\Window\Document\WebGL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="libEGL.dll">
