@@ -27,7 +27,8 @@ namespace HolographicJS
 		JsRuntimeHandle runtime;
 
 		void CreateContext();
-		void ProjectToGlobal(String^ name, Object^ object);
+		void ProjectClassToGlobal(String^ name, Object^ object);
+		void ProjectFunctionToGlobal(String^ name, JsNativeFunction callback);
 		void ThrowException(wstring errorString);
     };
 }

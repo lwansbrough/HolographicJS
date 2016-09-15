@@ -4,7 +4,6 @@
 
 #include "pch.h"
 #include "app.h"
-#include "SimpleRenderer.h"
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
@@ -49,10 +48,7 @@ int main(Platform::Array<Platform::String^>^)
 
 App::App() :
     mWindowClosed(false),
-    mWindowVisible(true),
-    mEglDisplay(EGL_NO_DISPLAY),
-    mEglContext(EGL_NO_CONTEXT),
-    mEglSurface(EGL_NO_SURFACE)
+    mWindowVisible(true)
 {
 }
 
@@ -70,6 +66,7 @@ void App::Initialize(CoreApplicationView^ applicationView)
 }
 
 // Called when the CoreWindow object is created (or re-created).
+[Platform::MTAThread]
 void App::SetWindow(CoreWindow^ window)
 {
     window->VisibilityChanged +=

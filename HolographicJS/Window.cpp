@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Window.h"
 
+using namespace std;
+using namespace Platform;
 using namespace HolographicJS;
 
 Window::Window(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame)

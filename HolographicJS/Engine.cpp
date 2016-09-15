@@ -33,8 +33,9 @@ void Engine::CreateContext() {
 	Engine^ engine = this;
 	window = ref new Window(this->holographicSpace, this->stationaryReferenceFrame);
 
-	ProjectToGlobal(L"console", console);
-	ProjectToGlobal(L"window", window);
+	ProjectClassToGlobal(L"console", console);
+	ProjectClassToGlobal(L"window", window);
+	//ProjectFunctionToGlobal(L"requestAnimationFrame", JSRequestAnimationFrame);
 
 	JsSetCurrentContext(JS_INVALID_REFERENCE);
 }
@@ -79,7 +80,7 @@ String^ Engine::RunScript(String^ script) {
 }
 
 
-void Engine::ProjectToGlobal(String^ name, Object^ object) {
+void Engine::ProjectClassToGlobal(String^ name, Object^ object) {
 	JsValueRef globalObject;
 	JsGetGlobalObject(&globalObject);
 
@@ -98,6 +99,19 @@ void Engine::ProjectToGlobal(String^ name, Object^ object) {
 	JsAddRef(inspectableObject, &refCount);
 }
 
+void Engine::ProjectFunctionToGlobal(String^ name, JsNativeFunction callback) {
+	JsValueRef globalObject;
+	JsGetGlobalObject(&globalObject);
+
+	JsPropertyIdRef propertyId;
+	JsGetPropertyIdFromName(name->Data(), &propertyId);
+
+	JsValueRef function;
+	JsCreateFunction(callback, nullptr, &function);
+
+	JsSetProperty(globalObject, propertyId, function, true);
+}
+
 void Engine::ThrowException(wstring errorString) {
 	JsValueRef errorValue;
 	JsValueRef errorObject;
@@ -106,3 +120,28 @@ void Engine::ThrowException(wstring errorString) {
 	JsCreateError(errorValue, &errorObject);
 	JsSetException(errorObject);
 }
+
+// Binding
+//
+//JsValueRef CALLBACK JSRequestAnimationFrame(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+//	Window::RequestAnimationFrame(arguments[1]);
+//}
+//
+//JsValueRef CALLBACK JSSetTimeout(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
+//{
+//	JsValueRef func = arguments[1];
+//	int delay = 0;
+//	JsNumberToInt(arguments[2], &delay);
+//	host->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE));
+//	return JS_INVALID_REFERENCE;
+//}
+//
+//// JsNativeFunction for setInterval(func, delay)
+//JsValueRef CALLBACK JSSetInterval(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
+//{
+//	JsValueRef func = arguments[1];
+//	int delay = 0;
+//	JsNumberToInt(arguments[2], &delay);
+//	host->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE, true));
+//	return JS_INVALID_REFERENCE;
+//}

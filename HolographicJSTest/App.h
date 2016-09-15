@@ -3,7 +3,6 @@
 #include <string>
 
 #include "pch.h"
-#include "SimpleRenderer.h"
 
 namespace HolographicJSTest
 {
@@ -20,7 +19,6 @@ namespace HolographicJSTest
         virtual void Uninitialize();
 
     private:
-        void RecreateRenderer();
 
         // Application lifecycle event handlers.
         void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
@@ -29,19 +27,8 @@ namespace HolographicJSTest
         void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
         void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args);
 
-        void InitializeEGL(Windows::Graphics::Holographic::HolographicSpace^ holographicSpace);
-        void InitializeEGL(Windows::UI::Core::CoreWindow^ window);
-        void App::InitializeEGLInner(Platform::Object^ windowBasis);
-        void CleanupEGL();
-
         bool mWindowClosed;
         bool mWindowVisible;
-        
-        EGLDisplay mEglDisplay;
-        EGLContext mEglContext;
-        EGLSurface mEglSurface;
-
-        std::unique_ptr<SimpleRenderer> mCubeRenderer;
 
         // The holographic space the app will use for rendering.
         Windows::Graphics::Holographic::HolographicSpace^ mHolographicSpace = nullptr;

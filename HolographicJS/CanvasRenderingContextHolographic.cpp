@@ -14,6 +14,11 @@ CanvasRenderingContextHolographic::CanvasRenderingContextHolographic(IMapView<St
 	this->holographicSpace = holographicSpace;
 	this->stationaryReferenceFrame = stationaryReferenceFrame;
 	CreateContext();
+
+	EGLint panelWidth = 0;
+	EGLint panelHeight = 0;
+	eglQuerySurface(display, surface, EGL_WIDTH, &panelWidth);
+	eglQuerySurface(display, surface, EGL_HEIGHT, &panelHeight);
 }
 
 void CanvasRenderingContextHolographic::CreateContext() {
@@ -176,6 +181,10 @@ void CanvasRenderingContextHolographic::CreateContext() {
 	{
 		throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
 	}
+}
+
+void CanvasRenderingContextHolographic::Render() {
+	eglSwapBuffers(display, surface);
 }
 
 void CanvasRenderingContextHolographic::ActiveTexture(GLenum texture) {
@@ -359,6 +368,10 @@ void CanvasRenderingContextHolographic::DrawArrays(GLenum mode, GLint first, GLs
 
 void CanvasRenderingContextHolographic::DrawElements(GLenum mode, GLsizei count, GLenum type, GLint offset) {
 	glDrawElements(mode, count, type, BUFFER_OFFSET(offset));
+}
+
+void CanvasRenderingContextHolographic::DrawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLint offset, GLsizei primcount) {
+	glDrawElementsInstancedANGLE(mode, count, type, BUFFER_OFFSET(offset), primcount);
 }
 
 void CanvasRenderingContextHolographic::Enable(GLenum cap) {
@@ -743,6 +756,10 @@ void CanvasRenderingContextHolographic::UseProgram(GLuint program) {
 	glUseProgram(program);
 }
 
+void CanvasRenderingContextHolographic::UniformMatrix4fv(GLint location, GLboolean transpose, const Array<GLfloat>^ value) {
+	glUniformMatrix4fv(location, value->Length, transpose, value->Data);
+}
+
 void CanvasRenderingContextHolographic::ValidateProgram(GLuint program) {
 	glValidateProgram(program);
 }
@@ -761,6 +778,10 @@ void CanvasRenderingContextHolographic::VertexAttrib3f(GLuint indx, GLfloat x, G
 
 void CanvasRenderingContextHolographic::VertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
 	glVertexAttrib4f(indx, x, y, z, w);
+}
+
+void CanvasRenderingContextHolographic::VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
+	glVertexAttribDivisorANGLE(index, divisor);
 }
 
 void CanvasRenderingContextHolographic::VertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) {
