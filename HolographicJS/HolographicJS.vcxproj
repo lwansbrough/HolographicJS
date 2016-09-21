@@ -214,16 +214,17 @@
     <ClInclude Include="CanvasRenderingContextHolographic.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Host.h" />
+    <ClInclude Include="Binding.h" />
     <ClInclude Include="WebGLActiveInfo.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="SetTimeout.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CanvasRenderingContextHolographic.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Host.cpp" />
+    <ClCompile Include="Binding.cpp" />
     <ClCompile Include="WebGLActiveInfo.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="pch.cpp">
@@ -235,7 +236,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="SetTimeout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="libEGL.dll">

@@ -5,14 +5,14 @@ using namespace HolographicJS;
 
 Host::Host(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame)
 {
-	engine = ref new Engine(holographicSpace, stationaryReferenceFrame);
-	engine->RunScript(L"console.log('HolographicJS engine initialized.')");
+	engine = new Engine(holographicSpace, stationaryReferenceFrame);
+	engine->runScript(L"console.log('HolographicJS engine initialized.')");
 }
 
 String^ Host::RunScript(String^ fileName)
 {
 	String^ script = LoadScript(fileName);
-	return engine->RunScript(script);
+	return engine->runScript(script->Data());
 }
 
 String^ Host::LoadScript(String^ fileName) {

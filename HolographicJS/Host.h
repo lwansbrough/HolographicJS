@@ -8,12 +8,11 @@ namespace HolographicJS {
 	public ref class Host sealed
 	{
 	public:
-		property Engine^ engine;
-
 		Host(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
 
 		String^ RunScript(String^ fileName);
 	private:
+		Engine* engine;
 		String^ LoadScript(String^ fileName);
 	};
 }

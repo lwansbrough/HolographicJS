@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Engine.h"
 #include "Console.h"
+#include "Binding.h"
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -29,31 +30,27 @@ void Engine::CreateContext() {
 	if (JsSetCurrentContext(context) != JsNoError)
 		throw ref new Exception(-1, L"Failed to set execution context.");
 
-	Console^ console = ref new Console();
-	Engine^ engine = this;
-	window = ref new Window(this->holographicSpace, this->stationaryReferenceFrame);
+	//window = ref new Window(this->holographicSpace, this->stationaryReferenceFrame);
+	//renderingContext = ref new CanvasRenderingContextHolographic(nullptr, this->holographicSpace, this->stationaryReferenceFrame);
 
-	ProjectClassToGlobal(L"console", console);
-	ProjectClassToGlobal(L"window", window);
-	//ProjectFunctionToGlobal(L"requestAnimationFrame", JSRequestAnimationFrame);
+	Binding::engine = this;
+	Binding::bind();
+
+	Binding::projectNativeClassToGlobal(L"Console", Console::constructor, Console::prototype, Console::getMembers(), Console::getProperties());
 
 	JsSetCurrentContext(JS_INVALID_REFERENCE);
 }
 
-String^ Engine::RunScript(String^ script) {
+String^ Engine::runScript(const wchar_t * script) {
 	JsValueRef result;
 
-	if (script->IsEmpty()) {
+	if (wcslen(script) == 0) {
 		throw ref new Exception(-1, L"Unable to load script or script was empty");
-	}
-
-	if (script->IsEmpty()) {
-		throw ref new Exception(-1, L"invalid script");
 	}
 
 	JsSetCurrentContext(context);
 
-	JsErrorCode errorCode = JsRunScript(script->Data(), currentSourceContext++, L"", &result);
+	JsErrorCode errorCode = JsRunScript(script, currentSourceContext++, L"", &result);
 
 	if (errorCode != JsNoError) {
 		JsValueRef exception;
@@ -78,40 +75,39 @@ String^ Engine::RunScript(String^ script) {
 
 	return ref new String();
 }
-
-
-void Engine::ProjectClassToGlobal(String^ name, Object^ object) {
-	JsValueRef globalObject;
-	JsGetGlobalObject(&globalObject);
-
-	JsPropertyIdRef objectPropertyId;
-	JsGetPropertyIdFromName(name->Data(), &objectPropertyId);
-
-	IInspectable* inspectableObject = reinterpret_cast<IInspectable*>(object);
-
-	JsValueRef jsObject;
-	if (JsInspectableToObject(inspectableObject, &jsObject) != JsNoError)
-		throw ref new Exception(-1, L"Unable to project object to global space");
-
-	JsSetProperty(globalObject, objectPropertyId, jsObject, true);
-
-	unsigned int refCount;
-	JsAddRef(inspectableObject, &refCount);
-}
-
-void Engine::ProjectFunctionToGlobal(String^ name, JsNativeFunction callback) {
-	JsValueRef globalObject;
-	JsGetGlobalObject(&globalObject);
-
-	JsPropertyIdRef propertyId;
-	JsGetPropertyIdFromName(name->Data(), &propertyId);
-
-	JsValueRef function;
-	JsCreateFunction(callback, nullptr, &function);
-
-	JsSetProperty(globalObject, propertyId, function, true);
-}
-
+//
+//void Engine::ProjectClassToGlobal(String^ name, Object^ object) {
+//	JsValueRef globalObject;
+//	JsGetGlobalObject(&globalObject);
+//
+//	JsPropertyIdRef objectPropertyId;
+//	JsGetPropertyIdFromName(name->Data(), &objectPropertyId);
+//
+//	IInspectable* inspectableObject = reinterpret_cast<IInspectable*>(object);
+//
+//	JsValueRef jsObject;
+//	if (JsInspectableToObject(inspectableObject, &jsObject) != JsNoError)
+//		throw ref new Exception(-1, L"Unable to project object to global space");
+//
+//	JsSetProperty(globalObject, objectPropertyId, jsObject, true);
+//
+//	unsigned int refCount;
+//	JsAddRef(inspectableObject, &refCount);
+//}
+//
+//void Engine::ProjectFunctionToGlobal(String^ name, JsNativeFunction callback) {
+//	JsValueRef globalObject;
+//	JsGetGlobalObject(&globalObject);
+//
+//	JsPropertyIdRef propertyId;
+//	JsGetPropertyIdFromName(name->Data(), &propertyId);
+//
+//	JsValueRef function;
+//	JsCreateFunction(callback, nullptr, &function);
+//
+//	JsSetProperty(globalObject, propertyId, function, true);
+//}
+//
 void Engine::ThrowException(wstring errorString) {
 	JsValueRef errorValue;
 	JsValueRef errorObject;
@@ -122,9 +118,11 @@ void Engine::ThrowException(wstring errorString) {
 }
 
 // Binding
-//
+
 //JsValueRef CALLBACK JSRequestAnimationFrame(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-//	Window::RequestAnimationFrame(arguments[1]);
+//	renderingContext->Render();
+//	JsValueRef result;
+//	JsCallFunction(arguments[1], nullptr, 0, &result);
 //}
 //
 //JsValueRef CALLBACK JSSetTimeout(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)

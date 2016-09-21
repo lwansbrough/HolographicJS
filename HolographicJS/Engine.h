@@ -5,30 +5,21 @@
 #include "Console.h"
 #include "Window.h"
 
-using namespace std;
-using namespace Platform;
-using namespace Windows::Graphics::Holographic;
-using namespace Windows::Perception::Spatial;
-
-namespace HolographicJS
+class Engine
 {
-    public ref class Engine sealed
-    {
-    public:
-		property HolographicSpace^ holographicSpace;
-		property SpatialStationaryFrameOfReference^ stationaryReferenceFrame;
-		property Window^ window;
+public:
+	HolographicSpace^ holographicSpace;
+	SpatialStationaryFrameOfReference^ stationaryReferenceFrame;
 
-        Engine(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
-		String^ RunScript(String^ script);
-	private:
-		unsigned currentSourceContext;
-		JsContextRef context;
-		JsRuntimeHandle runtime;
+	Engine(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
+	String^ runScript(const wchar_t * script);
+private:
+	unsigned currentSourceContext;
+	JsContextRef context;
+	JsRuntimeHandle runtime;
 
-		void CreateContext();
-		void ProjectClassToGlobal(String^ name, Object^ object);
-		void ProjectFunctionToGlobal(String^ name, JsNativeFunction callback);
-		void ThrowException(wstring errorString);
-    };
-}
+	void CreateContext();
+	void ThrowException(wstring errorString);
+
+	JsValueRef CALLBACK JSRequestAnimationFrame(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+};
