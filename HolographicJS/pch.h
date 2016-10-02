@@ -17,3 +17,7 @@
 
 // ANGLE include for Windows Store
 #include <angle_windowsstore.h>
+
+// Chakra engine with Edge mode enabled
+#define USE_EDGEMODE_JSRT
+#include <jsrt.h>

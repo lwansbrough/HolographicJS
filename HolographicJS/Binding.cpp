@@ -30,7 +30,7 @@ JsValueRef CALLBACK Binding::JSSetTimeout(JsValueRef callee, bool isConstructCal
 	JsValueRef func = arguments[1];
 	int delay = 0;
 	JsNumberToInt(arguments[2], &delay);
-	//engine->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE));
+	engine->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE));
 	return JS_INVALID_REFERENCE;
 }
 
@@ -41,7 +41,7 @@ JsValueRef CALLBACK Binding::JSSetInterval(JsValueRef callee, bool isConstructCa
 	JsValueRef func = arguments[1];
 	int delay = 0;
 	JsNumberToInt(arguments[2], &delay);
-	//engine->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE, true));
+	engine->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE, true));
 	return JS_INVALID_REFERENCE;
 }
 

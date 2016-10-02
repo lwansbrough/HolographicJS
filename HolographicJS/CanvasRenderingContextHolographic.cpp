@@ -3,14 +3,13 @@
 #include "Binding.h"
 #include <assert.h>
 
-using namespace HolographicJS;
 using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
 
-//Engine* CanvasRenderingContextHolographic::engine;
+Engine* CanvasRenderingContextHolographic::engine;
 JsValueRef CanvasRenderingContextHolographic::prototype;
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::constructor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
@@ -756,12 +755,12 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::render(JsValueRef callee,
 		OutputDebugString(L"Unable to swap buffers.");
 	}
 
-	//JsValueRef jsTime;
-	//int currentTime = clock() / (double)(CLOCKS_PER_SEC / 1000);
-	//JsIntToNumber(currentTime, &jsTime);
+	JsValueRef jsTime;
+	int currentTime = clock() / (double)(CLOCKS_PER_SEC / 1000);
+	JsIntToNumber(currentTime, &jsTime);
 
 	//JsValueRef args[] = { jsTime };
-	//engine->taskQueue.push(new Task(arguments[1], 0, arguments[0], args));
+	engine->taskQueue.push(new Task(arguments[1], 0, arguments[0], nullptr, false));
 
 	return JS_INVALID_REFERENCE;
 }

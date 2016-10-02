@@ -1,8 +1,6 @@
-#pragma once
+#include "pch.h"
 #include "Task.h"
 #include <time.h>
-
-using namespace std;
 
 Task::Task(JsValueRef func, int delay, JsValueRef thisArg, JsValueRef extraArgs, bool repeat)
 {

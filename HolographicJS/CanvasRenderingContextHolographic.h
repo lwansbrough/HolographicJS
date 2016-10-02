@@ -24,8 +24,8 @@ using namespace Windows::Perception::Spatial;
 class CanvasRenderingContextHolographic
 {
 public:
-	CanvasRenderingContextHolographic(IMapView<String^, Boolean>^ contextAttributes, HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
 	static Engine* engine;
+	CanvasRenderingContextHolographic(IMapView<String^, Boolean>^ contextAttributes, HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
 
 	static JsValueRef CALLBACK constructor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	static JsValueRef prototype;

@@ -13,6 +13,6 @@ public:
 	bool _repeat;
 	int _time;
 	Task(JsValueRef func, int delay, JsValueRef thisArg, JsValueRef extraArgs, bool repeat = false);
-	JsValueRef invoke();						// invoke a task
+	JsValueRef invoke();
 	~Task();
 };

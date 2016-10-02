@@ -1,6 +1,12 @@
 #pragma once
 
 #include <Engine.h>
+#include "WebGLActiveInfo.h"
+
+using namespace std;
+using namespace Platform;
+using namespace Windows::Graphics::Holographic;
+using namespace Windows::Perception::Spatial;
 
 class Binding
 {

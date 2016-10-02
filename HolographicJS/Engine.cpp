@@ -7,10 +7,6 @@
 #include <iostream>
 #include <sstream>
 
-using namespace std;
-using namespace HolographicJS;
-using namespace Platform;
-
 Engine::Engine(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame) {
 	this->holographicSpace = holographicSpace;
 	this->stationaryReferenceFrame = stationaryReferenceFrame;
@@ -34,7 +30,7 @@ void Engine::CreateContext() {
 	if (JsSetPromiseContinuationCallback(PromiseContinuationCallback, &taskQueue) != JsNoError)
 		throw ref new Exception(-1, L"Failed to set up promise continuations.");
 
-	//CanvasRenderingContextHolographic::engine = this;
+	CanvasRenderingContextHolographic::engine = this;
 
 	Binding::engine = this;
 	Binding::bind(holographicSpace, stationaryReferenceFrame);
@@ -112,18 +108,9 @@ String^ Engine::runScript(const wchar_t * script) {
 	return ref new String();
 }
 
-void Engine::ThrowException(wstring errorString) {
-	JsValueRef errorValue;
-	JsValueRef errorObject;
-
-	JsPointerToString(errorString.c_str(), errorString.length(), &errorValue);
-	JsCreateError(errorValue, &errorObject);
-	JsSetException(errorObject);
-}
-
-void CALLBACK PromiseContinuationCallback(JsValueRef task, void *callbackState)
+// Save promises in task queue
+void CALLBACK Engine::PromiseContinuationCallback(JsValueRef task, void *callbackState)
 {
-	// Save promises in taskQueue.
 	JsValueRef global;
 	JsGetGlobalObject(&global);
 	queue<Task*> * q = (queue<Task*> *)callbackState;

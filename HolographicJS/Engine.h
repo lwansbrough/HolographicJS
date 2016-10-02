@@ -5,7 +5,11 @@
 #include <string>
 #include "Console.h"
 #include "Task.h"
-#include "Window.h"
+
+using namespace std;
+using namespace Platform;
+using namespace Windows::Graphics::Holographic;
+using namespace Windows::Perception::Spatial;
 
 class Engine
 {
@@ -15,12 +19,12 @@ public:
 
 	Engine(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
 	String^ runScript(const wchar_t * script);
-	queue<Task*> taskQueue;
+	std::queue<Task*> taskQueue;
 private:
 	unsigned currentSourceContext;
 	JsContextRef context;
 	JsRuntimeHandle runtime;
 
 	void CreateContext();
-	void ThrowException(wstring errorString);
+	static void CALLBACK Engine::PromiseContinuationCallback(JsValueRef task, void *callbackState);
 };
