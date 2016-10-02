@@ -1,17 +1,18 @@
 #pragma once
+#define USE_EDGEMODE_JSRT
+#include <jsrt.h>
 
-using namespace Platform;
-
-namespace HolographicJS
+class WebGLActiveInfo
 {
-	public ref class WebGLActiveInfo sealed
-	{
-	public:
-		WebGLActiveInfo();
-		WebGLActiveInfo(GLenum type, String^ name, GLint size);
+public:
+	WebGLActiveInfo();
+	WebGLActiveInfo(GLenum type, const wchar_t * name, GLint size);
+	static JsValueRef CALLBACK constructor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef prototype;
+	static std::map<const wchar_t *, JsNativeFunction> getMembers();
+	static std::map<const wchar_t *, JsValueRef> getProperties();
 
-		property GLint size;
-		property GLenum type;
-		property String^ name;
-	};
-}
+	GLint size;
+	GLenum type;
+	const wchar_t * name;
+};

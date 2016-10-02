@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Engine.h"
+#include "CanvasRenderingContextHolographic.h"
 #include "Console.h"
 #include "Binding.h"
 #include <string>
@@ -30,13 +31,29 @@ void Engine::CreateContext() {
 	if (JsSetCurrentContext(context) != JsNoError)
 		throw ref new Exception(-1, L"Failed to set execution context.");
 
-	//window = ref new Window(this->holographicSpace, this->stationaryReferenceFrame);
-	//renderingContext = ref new CanvasRenderingContextHolographic(nullptr, this->holographicSpace, this->stationaryReferenceFrame);
+	if (JsSetPromiseContinuationCallback(PromiseContinuationCallback, &taskQueue) != JsNoError)
+		throw ref new Exception(-1, L"Failed to set up promise continuations.");
+
+	//CanvasRenderingContextHolographic::engine = this;
 
 	Binding::engine = this;
-	Binding::bind();
+	Binding::bind(holographicSpace, stationaryReferenceFrame);
 
-	Binding::projectNativeClassToGlobal(L"Console", Console::constructor, Console::prototype, Console::getMembers(), Console::getProperties());
+	Binding::projectNativeClassToGlobal(
+		L"Console",
+		Console::constructor,
+		Console::prototype,
+		Console::getMembers(),
+		Console::getProperties()
+	);
+
+	Binding::projectNativeClassToGlobal(
+		L"CanvasRenderingContextHolographic",
+		CanvasRenderingContextHolographic::constructor,
+		CanvasRenderingContextHolographic::prototype,
+		CanvasRenderingContextHolographic::getMembers(),
+		CanvasRenderingContextHolographic::getProperties()
+	);
 
 	JsSetCurrentContext(JS_INVALID_REFERENCE);
 }
@@ -73,41 +90,28 @@ String^ Engine::runScript(const wchar_t * script) {
 		return ref new String(message);
 	}
 
+	while (!taskQueue.empty()) {
+		Task* task = taskQueue.front();
+		taskQueue.pop();
+		int currentTime = clock() / (double)(CLOCKS_PER_SEC / 1000);
+		if (currentTime - task->_time > task->_delay) {
+			task->invoke();
+			if (task->_repeat) {
+				task->_time = currentTime;
+				taskQueue.push(task);
+			}
+			else {
+				delete task;
+			}
+		}
+		else {
+			taskQueue.push(task);
+		}
+	}
+
 	return ref new String();
 }
-//
-//void Engine::ProjectClassToGlobal(String^ name, Object^ object) {
-//	JsValueRef globalObject;
-//	JsGetGlobalObject(&globalObject);
-//
-//	JsPropertyIdRef objectPropertyId;
-//	JsGetPropertyIdFromName(name->Data(), &objectPropertyId);
-//
-//	IInspectable* inspectableObject = reinterpret_cast<IInspectable*>(object);
-//
-//	JsValueRef jsObject;
-//	if (JsInspectableToObject(inspectableObject, &jsObject) != JsNoError)
-//		throw ref new Exception(-1, L"Unable to project object to global space");
-//
-//	JsSetProperty(globalObject, objectPropertyId, jsObject, true);
-//
-//	unsigned int refCount;
-//	JsAddRef(inspectableObject, &refCount);
-//}
-//
-//void Engine::ProjectFunctionToGlobal(String^ name, JsNativeFunction callback) {
-//	JsValueRef globalObject;
-//	JsGetGlobalObject(&globalObject);
-//
-//	JsPropertyIdRef propertyId;
-//	JsGetPropertyIdFromName(name->Data(), &propertyId);
-//
-//	JsValueRef function;
-//	JsCreateFunction(callback, nullptr, &function);
-//
-//	JsSetProperty(globalObject, propertyId, function, true);
-//}
-//
+
 void Engine::ThrowException(wstring errorString) {
 	JsValueRef errorValue;
 	JsValueRef errorObject;
@@ -117,29 +121,11 @@ void Engine::ThrowException(wstring errorString) {
 	JsSetException(errorObject);
 }
 
-// Binding
-
-//JsValueRef CALLBACK JSRequestAnimationFrame(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-//	renderingContext->Render();
-//	JsValueRef result;
-//	JsCallFunction(arguments[1], nullptr, 0, &result);
-//}
-//
-//JsValueRef CALLBACK JSSetTimeout(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
-//{
-//	JsValueRef func = arguments[1];
-//	int delay = 0;
-//	JsNumberToInt(arguments[2], &delay);
-//	host->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE));
-//	return JS_INVALID_REFERENCE;
-//}
-//
-//// JsNativeFunction for setInterval(func, delay)
-//JsValueRef CALLBACK JSSetInterval(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
-//{
-//	JsValueRef func = arguments[1];
-//	int delay = 0;
-//	JsNumberToInt(arguments[2], &delay);
-//	host->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE, true));
-//	return JS_INVALID_REFERENCE;
-//}
+void CALLBACK PromiseContinuationCallback(JsValueRef task, void *callbackState)
+{
+	// Save promises in taskQueue.
+	JsValueRef global;
+	JsGetGlobalObject(&global);
+	queue<Task*> * q = (queue<Task*> *)callbackState;
+	q->push(new Task(task, 0, global, JS_INVALID_REFERENCE));
+}

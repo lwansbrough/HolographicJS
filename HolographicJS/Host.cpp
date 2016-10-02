@@ -6,7 +6,15 @@ using namespace HolographicJS;
 Host::Host(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame)
 {
 	engine = new Engine(holographicSpace, stationaryReferenceFrame);
-	engine->runScript(L"console.log('HolographicJS engine initialized.')");
+	engine->runScript(
+		L"const console = new Console();"
+		L"console.log('   __ __     __                        __   _        ______');"
+		L"console.log('  / // /__  / /__  ___ ________ ____  / /  (_)_____ / / __/');"
+		L"console.log(' / _  / _ \\\\/ / _ \\\\/ _ `/ __/ _ `/ _ \\\\/ _ \\\\/ / __/ // /\\\\ \\\\  ');"
+		L"console.log('/_//_/\\\\___/_/\\\\___/\\\\_, /_/  \\\\_,_/ .__/_//_/_/\\\\__/\\\\___/___/  ');"
+		L"console.log('                 /___/        /_/                          ');"
+		L"console.log('\\n\\n');"
+	);
 }
 
 String^ Host::RunScript(String^ fileName)

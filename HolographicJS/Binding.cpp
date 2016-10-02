@@ -5,15 +5,22 @@
 
 Engine* Binding::engine;
 
-void Binding::bind() {
+void Binding::bind(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame) {
 	JsValueRef globalObject;
 	JsGetGlobalObject(&globalObject);
-	JsValueRef console;
-	JsCreateObject(&console);
-	setProperty(globalObject, L"console", console);
-	setCallback(console, L"log", Console::log, nullptr);
+
+	JsValueRef jsHolographicSpace;
+	IInspectable* inspectableHolographicSpace = reinterpret_cast<IInspectable*>(holographicSpace);
+	JsInspectableToObject(inspectableHolographicSpace, &jsHolographicSpace);
+	setProperty(globalObject, L"holographicSpace", jsHolographicSpace);
+
+	JsValueRef jsStationaryReferenceFrame;
+	IInspectable* inspectableStationaryReferenceFrame = reinterpret_cast<IInspectable*>(stationaryReferenceFrame);
+	JsInspectableToObject(inspectableStationaryReferenceFrame, &jsStationaryReferenceFrame);
+	setProperty(globalObject, L"stationaryReferenceFrame", jsStationaryReferenceFrame);
+
 	setCallback(globalObject, L"setTimeout", JSSetTimeout, nullptr);
-	setCallback(globalObject, L"setInterval", JSSetInterval, nullptr);	
+	setCallback(globalObject, L"setInterval", JSSetInterval, nullptr);
 }
 
 // JsNativeFunction for setTimeout(func, delay)
@@ -93,6 +100,32 @@ void Binding::projectNativeClassToObject(JsValueRef object, const wchar_t *class
 	setProperty(jsConstructor, L"prototype", prototype);
 }
 
+HolographicSpace^ Binding::valueToHolographicSpace(JsValueRef value) {
+	// Use once HolographicSpace native pointer is available
+	//void* hs;
+	//JsGetExternalData(value, &hs);
+	//return reinterpret_cast<HolographicSpace^>(hs);
+	IInspectable* holographicSpace;
+	JsObjectToInspectable(value, &holographicSpace);
+	return reinterpret_cast<HolographicSpace^>(holographicSpace);
+}
+
+SpatialStationaryFrameOfReference^ Binding::valueToSpatialStationaryFrameOfReference(JsValueRef value) {
+	// Use once HolographicSpace native pointer is available
+	//void* srf;
+	//JsGetExternalData(value, &srf);
+	//return reinterpret_cast<SpatialStationaryFrameOfReference^>(srf);
+	IInspectable* srf;
+	JsObjectToInspectable(value, &srf);
+	return reinterpret_cast<SpatialStationaryFrameOfReference^>(srf);
+}
+
+WebGLActiveInfo* Binding::valueToWebGLActiveInfo(JsValueRef value) {
+	void* activeInfo;
+	JsGetExternalData(value, &activeInfo);
+	return reinterpret_cast<WebGLActiveInfo*>(activeInfo);
+}
+
 bool Binding::valueToBool(JsValueRef value) {
 	bool b;
 	JsBooleanToBool(value, &b);
@@ -117,6 +150,21 @@ int Binding::valueToInt(JsValueRef value) {
 	return i;
 }
 
+std::vector<float> Binding::valueToFloatVector(JsValueRef value) {
+	int length;
+	std::vector<float> floats;
+	JsNumberToInt(getProperty(value, L"length"), &length);
+	for (int i = 0; i < length; i++) {
+		JsValueRef jsIndex;
+		JsIntToNumber(i, &jsIndex);
+		JsValueRef jsNumber;
+		JsGetIndexedProperty(value, jsIndex, &jsNumber);
+		floats.push_back(valueToFloat(jsNumber));
+	}
+
+	return floats;
+}
+
 std::vector<int> Binding::valueToIntVector(JsValueRef value) {
 	int length;
 	std::vector<int> ints;
@@ -130,6 +178,27 @@ std::vector<int> Binding::valueToIntVector(JsValueRef value) {
 	}
 
 	return ints;
+}
+
+int Binding::valueToShort(JsValueRef value) {
+	int i;
+	JsNumberToInt(value, &i);
+	return (short)i;
+}
+
+std::vector<short> Binding::valueToShortVector(JsValueRef value) {
+	int length;
+	std::vector<short> shorts;
+	JsNumberToInt(getProperty(value, L"length"), &length);
+	for (int i = 0; i < length; i++) {
+		JsValueRef jsIndex;
+		JsIntToNumber(i, &jsIndex);
+		JsValueRef jsNumber;
+		JsGetIndexedProperty(value, jsIndex, &jsNumber);
+		shorts.push_back(valueToShort(jsNumber));
+	}
+
+	return shorts;
 }
 
 const wchar_t * Binding::valueToString(JsValueRef value) {
@@ -150,7 +219,19 @@ JsValueRef Binding::boolVectorToValue(std::vector<bool> vec) {
 	JsValueRef arr;
 	JsCreateArray(vec.size(), &arr);
 
-	// TODO finish implementation
+	int i = 0;
+	for (std::vector<bool>::iterator it = vec.begin(); it != vec.end(); ++it) {
+
+		JsValueRef value;
+		JsBoolToBoolean(*it, &value);
+
+		JsValueRef index;
+		JsIntToNumber(i, &index);
+
+		JsSetIndexedProperty(arr, index, value);
+
+		i++;
+	}
 
 	return arr;
 }
@@ -159,7 +240,19 @@ JsValueRef Binding::doubleVectorToValue(std::vector<double> vec) {
 	JsValueRef arr;
 	JsCreateArray(vec.size(), &arr);
 
-	// TODO finish implementation
+	int i = 0;
+	for (std::vector<double>::iterator it = vec.begin(); it != vec.end(); ++it) {
+
+		JsValueRef value;
+		JsDoubleToNumber(*it, &value);
+
+		JsValueRef index;
+		JsIntToNumber(i, &index);
+
+		JsSetIndexedProperty(arr, index, value);
+
+		i++;
+	}
 
 	return arr;
 }
@@ -168,7 +261,19 @@ JsValueRef Binding::floatVectorToValue(std::vector<float> vec) {
 	JsValueRef arr;
 	JsCreateArray(vec.size(), &arr);
 
-	// TODO finish implementation
+	int i = 0;
+	for (std::vector<float>::iterator it = vec.begin(); it != vec.end(); ++it) {
+
+		JsValueRef value;
+		JsDoubleToNumber(*it, &value);
+
+		JsValueRef index;
+		JsIntToNumber(i, &index);
+
+		JsSetIndexedProperty(arr, index, value);
+
+		i++;
+	}
 
 	return arr;
 }
@@ -184,7 +289,19 @@ JsValueRef Binding::intVectorToValue(std::vector<int> vec) {
 	JsValueRef arr;
 	JsCreateArray(vec.size(), &arr);
 
-	// TODO finish implementation
+	int i = 0;
+	for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); ++it) {
+
+		JsValueRef value;
+		JsIntToNumber(*it, &value);
+
+		JsValueRef index;
+		JsIntToNumber(i, &index);
+
+		JsSetIndexedProperty(arr, index, value);
+
+		i++;
+	}
 
 	return arr;
 }
@@ -195,11 +312,29 @@ JsValueRef Binding::stringToValue(const wchar_t * str, size_t strLen) {
 	return value;
 }
 
-JsValueRef Binding::stringVectorToValue(std::vector<string> vec) {
+JsValueRef Binding::stringVectorToValue(std::vector<const wchar_t *> vec) {
 	JsValueRef arr;
 	JsCreateArray(vec.size(), &arr);
 
-	// TODO finish implementation
+	int i = 0;
+	for (std::vector<const wchar_t *>::iterator it = vec.begin(); it != vec.end(); ++it) {
+
+		JsValueRef value;
+		JsPointerToString(*it, wcslen(*it), &value);
+
+		JsValueRef index;
+		JsIntToNumber(i, &index);
+
+		JsSetIndexedProperty(arr, index, value);
+
+		i++;
+	}
 
 	return arr;
+}
+
+JsValueRef Binding::webGLActiveInfoToValue(WebGLActiveInfo activeInfo) {
+	JsValueRef value;
+	JsCreateExternalObject(&activeInfo, nullptr, &value);
+	return value;
 }

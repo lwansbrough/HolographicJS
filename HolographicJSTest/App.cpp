@@ -20,13 +20,6 @@ using namespace HolographicJS;
 
 using namespace HolographicJSTest;
 
-// Helper to convert a length in device-independent pixels (DIPs) to a length in physical pixels.
-inline float ConvertDipsToPixels(float dips, float dpi)
-{
-    static const float dipsPerInch = 96.0f;
-    return floor(dips * dpi / dipsPerInch + 0.5f); // Round to nearest integer.
-}
-
 // Implementation of the IFrameworkViewSource interface, necessary to run our app.
 ref class SimpleApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
 {
@@ -66,7 +59,6 @@ void App::Initialize(CoreApplicationView^ applicationView)
 }
 
 // Called when the CoreWindow object is created (or re-created).
-[Platform::MTAThread]
 void App::SetWindow(CoreWindow^ window)
 {
     window->VisibilityChanged +=
@@ -85,16 +77,6 @@ void App::SetWindow(CoreWindow^ window)
 
         // Create a stationary frame of reference.
         mStationaryReferenceFrame = locator->CreateStationaryFrameOfReferenceAtCurrentLocation();
-
-        // The HolographicSpace has been created, so EGL can be initialized in holographic mode.
-        //InitializeEGL(mHolographicSpace);
-		Host^ holographicJS = ref new Host(mHolographicSpace, mStationaryReferenceFrame);
-		try {
-			holographicJS->RunScript("app.js");
-		}
-		catch (Exception^ e) {
-			OutputDebugString(e->Message->Data());
-		}
     }
     catch (Platform::Exception^ ex)
     {
@@ -108,19 +90,30 @@ void App::SetWindow(CoreWindow^ window)
 // Initializes scene resources
 void App::Load(Platform::String^ entryPoint)
 {
-    
+	try {
+		holographicJS = ref new Host(mHolographicSpace, mStationaryReferenceFrame);
+	}
+	catch (Exception^ e) {
+		OutputDebugString(e->Message->Data());
+	}
 }
 
 
 // This method is called after the window becomes active.
 void App::Run()
 {
+	bool hasRun = false;
     while (!mWindowClosed)
     {
         if (mWindowVisible)
         {
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-        }
+		
+			if (!hasRun) {
+				holographicJS->RunScript("app.js");
+				hasRun = true;
+			}
+		}
         else
         {
             CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);

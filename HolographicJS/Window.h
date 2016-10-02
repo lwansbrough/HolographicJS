@@ -16,8 +16,8 @@ namespace HolographicJS
 	{
 	public:
 		Window(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
-		CanvasRenderingContextHolographic^ CreateCanvasRenderingContextHolographic();
-		CanvasRenderingContextHolographic^ CreateCanvasRenderingContextHolographic(IMapView<String^, Boolean>^ contextAttributes);
+		//CanvasRenderingContextHolographic^ CreateCanvasRenderingContextHolographic();
+		//CanvasRenderingContextHolographic^ CreateCanvasRenderingContextHolographic(IMapView<String^, Boolean>^ contextAttributes);
 	private:
 		HolographicSpace^ holographicSpace;
 		SpatialStationaryFrameOfReference^ stationaryReferenceFrame;

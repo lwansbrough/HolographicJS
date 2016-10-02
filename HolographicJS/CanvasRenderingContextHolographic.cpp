@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CanvasRenderingContextHolographic.h"
 #include "Binding.h"
+#include <assert.h>
 
 using namespace HolographicJS;
 using namespace Platform;
@@ -8,6 +9,24 @@ using namespace Platform::Collections;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
+
+//Engine* CanvasRenderingContextHolographic::engine;
+JsValueRef CanvasRenderingContextHolographic::prototype;
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::constructor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
+{
+	assert(isConstructCall);
+	JsValueRef output = JS_INVALID_REFERENCE;
+
+	HolographicSpace^ holographicSpace = Binding::valueToHolographicSpace(arguments[1]);
+	SpatialStationaryFrameOfReference^ stationaryReferenceFrame = Binding::valueToSpatialStationaryFrameOfReference(arguments[2]);
+
+	CanvasRenderingContextHolographic* context = new CanvasRenderingContextHolographic(nullptr, holographicSpace, stationaryReferenceFrame);
+	JsCreateExternalObject(context, nullptr, &output);
+	JsSetPrototype(output, CanvasRenderingContextHolographic::prototype);
+
+	return output;
+}
 
 std::map<const wchar_t *, JsNativeFunction> CanvasRenderingContextHolographic::getMembers() {
 	std::map<const wchar_t *, JsNativeFunction> members;
@@ -90,6 +109,7 @@ std::map<const wchar_t *, JsNativeFunction> CanvasRenderingContextHolographic::g
 	members.insert({ L"linkProgram", linkProgram });
 	members.insert({ L"pixelStorei", pixelStorei });
 	members.insert({ L"polygonOffset", polygonOffset });
+	members.insert({ L"render", render });
 	members.insert({ L"renderbufferStorage", renderbufferStorage });
 	members.insert({ L"sampleCoverage", sampleCoverage });
 	members.insert({ L"scissor", scissor });
@@ -554,19 +574,15 @@ std::map<const wchar_t *, JsValueRef> CanvasRenderingContextHolographic::getProp
 
 CanvasRenderingContextHolographic::CanvasRenderingContextHolographic(IMapView<String^, Boolean>^ contextAttributes, HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame)
 {
-	this->contextAttributes = contextAttributes;
-	this->holographicSpace = holographicSpace;
-	this->stationaryReferenceFrame = stationaryReferenceFrame;
-	CreateContext();
+	createContext(holographicSpace, stationaryReferenceFrame);
 
-	EGLint panelWidth = 0;
-	EGLint panelHeight = 0;
-	eglQuerySurface(display, surface, EGL_WIDTH, &panelWidth);
-	eglQuerySurface(display, surface, EGL_HEIGHT, &panelHeight);
+	if (eglSwapBuffers(display, surface) != EGL_TRUE) {
+		OutputDebugString(L"\r\n");
+		OutputDebugString(L"Failed to swap buffers. Lost device?");
+	}
 }
 
-JsValueRef CALLBACK CanvasRenderingContextHolographic::createContext(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+void CanvasRenderingContextHolographic::createContext(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame) {
 	const EGLint configAttributes[] =
 	{
 		EGL_RED_SIZE, 8,
@@ -692,10 +708,10 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::createContext(JsValueRef 
 
 	// Create a PropertySet and initialize with the EGLNativeWindowType.
 	PropertySet^ surfaceCreationProperties = ref new PropertySet();
-	surfaceCreationProperties->Insert(ref new String(EGLNativeWindowTypeProperty), this->holographicSpace);
-	if (this->stationaryReferenceFrame != nullptr)
+	surfaceCreationProperties->Insert(ref new String(EGLNativeWindowTypeProperty), holographicSpace);
+	if (stationaryReferenceFrame != nullptr)
 	{
-		surfaceCreationProperties->Insert(ref new String(EGLBaseCoordinateSystemProperty), this->stationaryReferenceFrame);
+		surfaceCreationProperties->Insert(ref new String(EGLBaseCoordinateSystemProperty), stationaryReferenceFrame);
 	}
 
 	// You can configure the surface to render at a lower resolution and be scaled up to
@@ -729,8 +745,25 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::createContext(JsValueRef 
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::render(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	void* self;
+	if (JsGetExternalData(arguments[0], &self) != JsNoError) {
+		return JS_INVALID_REFERENCE;
+	}
 
-	eglSwapBuffers(display, surface);
+	CanvasRenderingContextHolographic* context = static_cast<CanvasRenderingContextHolographic*>(self);
+	if (eglSwapBuffers(context->display, context->surface) != EGL_TRUE) {
+		OutputDebugString(L"\r\n");
+		OutputDebugString(L"Unable to swap buffers.");
+	}
+
+	//JsValueRef jsTime;
+	//int currentTime = clock() / (double)(CLOCKS_PER_SEC / 1000);
+	//JsIntToNumber(currentTime, &jsTime);
+
+	//JsValueRef args[] = { jsTime };
+	//engine->taskQueue.push(new Task(arguments[1], 0, arguments[0], args));
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::activeTexture(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -743,6 +776,8 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::attachShader(JsValueRef c
 	GLuint program = Binding::valueToInt(arguments[1]);
 	GLuint shader = Binding::valueToInt(arguments[2]);
 	glAttachShader(program, shader);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::bindAttribLocation(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -752,30 +787,40 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::bindAttribLocation(JsValu
 
 	const char* nameChars = AscIICharsFromString(name);
 	glBindAttribLocation(program, index, nameChars);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::bindBuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum target = Binding::valueToInt(arguments[1]);
 	GLuint buffer = Binding::valueToInt(arguments[2]);
 	glBindBuffer(target, buffer);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::bindFramebuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum target = Binding::valueToInt(arguments[1]);
 	GLuint framebuffer = Binding::valueToInt(arguments[2]);
 	glBindFramebuffer(target, framebuffer);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::bindRenderbuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum target = Binding::valueToInt(arguments[1]);
 	GLuint renderbuffer = Binding::valueToInt(arguments[2]);
 	glBindRenderbuffer(target, renderbuffer);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::bindTexture(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum target = Binding::valueToInt(arguments[1]);
 	GLuint texture = Binding::valueToInt(arguments[2]);
 	glBindTexture(target, texture);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::blendColor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -784,23 +829,31 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::blendColor(JsValueRef cal
 	GLclampf blue = (float)Binding::valueToDouble(arguments[3]);
 	GLclampf alpha = (float)Binding::valueToDouble(arguments[4]);
 	glBlendColor(red, green, blue, alpha);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::blendEquation(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum mode = Binding::valueToInt(arguments[1]);
 	glBlendEquation(mode);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::blendEquationSeparate(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum modeRGB = Binding::valueToInt(arguments[1]);
 	GLenum modeAlpha = Binding::valueToInt(arguments[2]);
 	glBlendEquationSeparate(modeRGB, modeAlpha);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::blendFunc(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum sfactor = Binding::valueToInt(arguments[1]);
 	GLenum dfactor = Binding::valueToInt(arguments[2]);
 	glBlendFunc(sfactor, dfactor);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::blendFuncSeparate(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -809,21 +862,66 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::blendFuncSeparate(JsValue
 	GLenum srcAlpha = Binding::valueToInt(arguments[3]);
 	GLenum dstAlpha = Binding::valueToInt(arguments[4]);
 	glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::bufferData(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum target = Binding::valueToInt(arguments[1]);
-	GLint size = Binding::valueToInt(arguments[2]);
-	// TODO: int size or array<float> data
 	GLenum usage = Binding::valueToInt(arguments[3]);
-	glBufferData(target, size, NULL, usage);
+	JsValueType dataType;
+
+	JsGetValueType(arguments[2], &dataType);
+	if (dataType == JsArray) {
+		std::vector<float> data = Binding::valueToFloatVector(arguments[2]);
+		int size = sizeof(float) * data.size();
+		glBufferData(target, size, &data[0], usage);
+	}
+	else if (dataType == JsTypedArray) {
+		JsTypedArrayType type;
+		JsValueRef buffer;
+		uint32_t byteOffset;
+		uint32_t byteLength;
+		JsGetTypedArrayInfo(arguments[2], &type, &buffer, &byteOffset, &byteLength);
+
+		switch (type) {
+		default:
+		case JsArrayTypeFloat32: {
+			std::vector<float> data = Binding::valueToFloatVector(arguments[2]);
+			int size = sizeof(float) * data.size();
+			glBufferData(target, size, &data[0], usage);
+		}
+		break;
+		case JsArrayTypeInt16: {
+			std::vector<short> data = Binding::valueToShortVector(arguments[2]);
+			int size = sizeof(short) * data.size();
+			glBufferData(target, size, &data[0], usage);
+		}
+		break;
+		case JsArrayTypeInt32: {
+			std::vector<int> data = Binding::valueToIntVector(arguments[2]);
+			int size = sizeof(int) * data.size();
+			glBufferData(target, size, &data[0], usage);
+		}
+		break;
+		}
+	}
+	else if (dataType == JsNumber) {
+		GLint size = Binding::valueToInt(arguments[2]);
+		glBufferData(target, size, NULL, usage);
+	}
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::bufferSubData(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum target = Binding::valueToInt(arguments[1]);
 	GLint offset = Binding::valueToInt(arguments[2]);
-	std::vector<int> data = Binding::valueToIntVector(arguments[3]);
-	glBufferSubData(target, offset, data.size(), &data[0]);
+	std::vector<float> data = Binding::valueToFloatVector(arguments[3]);
+	int size = sizeof(float) * data.size();
+	glBufferSubData(target, offset, size, &data[0]);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::checkFramebufferStatus(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -834,6 +932,8 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::checkFramebufferStatus(Js
 JsValueRef CALLBACK CanvasRenderingContextHolographic::clear(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLbitfield mask = Binding::valueToInt(arguments[1]);
 	glClear(mask);
+
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::clearColor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -842,29 +942,34 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::clearColor(JsValueRef cal
 	GLclampf blue = (float)Binding::valueToDouble(arguments[3]);
 	GLclampf alpha = (float)Binding::valueToDouble(arguments[4]);
 	glClearColor(red, green, blue, alpha);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::clearDepth(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	GLfloat depth = Binding::valueToDouble(arguments[1]);
+	GLfloat depth = Binding::valueToFloat(arguments[1]);
 	glClearDepthf(depth);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::clearStencil(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLint s = Binding::valueToInt(arguments[1]);
 	glClearStencil(s);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::colorMask(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	GLboolean red = Binding::valueToBool(arguments[1]);
-	GLboolean green = Binding::valueToBool(arguments[2]);
-	GLboolean blue = Binding::valueToBool(arguments[3]);
-	GLboolean alpha = Binding::valueToBool(arguments[4]);
+	GLboolean red = Binding::valueToInt(arguments[1]);
+	GLboolean green = Binding::valueToInt(arguments[2]);
+	GLboolean blue = Binding::valueToInt(arguments[3]);
+	GLboolean alpha = Binding::valueToInt(arguments[4]);
 	glColorMask(red, green, blue, alpha);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::compileShader(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint shader = Binding::valueToInt(arguments[1]);
 	glCompileShader(shader);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::createBuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -903,68 +1008,81 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::createTexture(JsValueRef 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::cullFace(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum mode = Binding::valueToInt(arguments[1]);
 	glCullFace(mode);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::deleteBuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint buffer = Binding::valueToInt(arguments[1]);
 	glDeleteBuffers(1, &buffer);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::deleteFramebuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint framebuffer = Binding::valueToInt(arguments[1]);
 	glDeleteFramebuffers(1, &framebuffer);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::deleteProgram(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint program = Binding::valueToInt(arguments[1]);
 	glDeleteProgram(program);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::deleteRenderbuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint renderbuffer = Binding::valueToInt(arguments[1]);
 	glDeleteRenderbuffers(1, &renderbuffer);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::deleteShader(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint shader = Binding::valueToInt(arguments[1]);
 	glDeleteShader(shader);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::deleteTexture(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint texture = Binding::valueToInt(arguments[1]);
 	glDeleteTextures(1, &texture);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::depthFunc(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum func = Binding::valueToInt(arguments[1]);
 	glDepthFunc(func);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::depthMask(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	GLboolean flag = Binding::valueToBool(arguments[1]);
+	GLboolean flag = Binding::valueToInt(arguments[1]);
 	glDepthMask(flag);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::depthRange(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLfloat zNear = (float)Binding::valueToDouble(arguments[1]);
 	GLfloat zFar = (float)Binding::valueToDouble(arguments[2]);
 	glDepthRangef(zNear, zFar);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::detachShader(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint program = Binding::valueToInt(arguments[1]);
 	GLuint shader = Binding::valueToInt(arguments[2]);
 	glDetachShader(program, shader);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::disable(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum cap = Binding::valueToInt(arguments[1]);
 	glDisable(cap);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::disableVertexAttribArray(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint index = Binding::valueToInt(arguments[1]);
 	glDisableVertexAttribArray(index);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::drawArrays(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -972,6 +1090,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::drawArrays(JsValueRef cal
 	GLint first = Binding::valueToInt(arguments[2]);
 	GLsizei count = Binding::valueToInt(arguments[3]);
 	glDrawArrays(mode, first, count);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::drawElements(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -980,6 +1099,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::drawElements(JsValueRef c
 	GLenum type = Binding::valueToInt(arguments[3]);
 	GLint offset = Binding::valueToInt(arguments[4]);
 	glDrawElements(mode, count, type, BUFFER_OFFSET(offset));
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::drawElementsInstancedANGLE(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -989,24 +1109,29 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::drawElementsInstancedANGL
 	GLint offset = Binding::valueToInt(arguments[4]);
 	GLsizei primcount = Binding::valueToInt(arguments[5]);
 	glDrawElementsInstancedANGLE(mode, count, type, BUFFER_OFFSET(offset), primcount);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::enable(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum cap = Binding::valueToInt(arguments[1]);
 	glEnable(cap);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::enableVertexAttribArray(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint index = Binding::valueToInt(arguments[1]);
 	glEnableVertexAttribArray(index);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::finish(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	glFinish();
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::flush(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	glFlush();
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::framebufferRenderbuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1015,6 +1140,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::framebufferRenderbuffer(J
 	GLenum renderbuffertarget = Binding::valueToInt(arguments[3]);
 	GLuint renderbuffer = Binding::valueToInt(arguments[4]);
 	glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::framebufferTexture2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1024,16 +1150,19 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::framebufferTexture2D(JsVa
 	GLuint texture = Binding::valueToInt(arguments[4]);
 	GLint level = Binding::valueToInt(arguments[5]);
 	glFramebufferTexture2D(target, attachment, textarget, texture, level);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::frontFace(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum mode = Binding::valueToInt(arguments[1]);
 	glFrontFace(mode);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::generateMipmap(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum target = Binding::valueToInt(arguments[1]);
 	glGenerateMipmap(target);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getActiveAttrib(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1053,9 +1182,8 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getActiveAttrib(JsValueRe
 
 	free(namebuffer);
 
-	return nullptr;
-	// TODO fix me
-	//return new WebGLActiveInfo(type, name, size);
+	WebGLActiveInfo activeInfo = WebGLActiveInfo(type, name, size);
+	return Binding::webGLActiveInfoToValue(activeInfo);
 }
 
 
@@ -1076,9 +1204,8 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getActiveUniform(JsValueR
 
 	free(namebuffer);
 
-	return nullptr;
-	// TODO fix me
-	//return new WebGLActiveInfo(type, name, size);
+	WebGLActiveInfo activeInfo = WebGLActiveInfo(type, name, size);
+	return Binding::webGLActiveInfoToValue(activeInfo);
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getAttribLocation(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1136,53 +1263,64 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getParameter(JsValueRef c
 	
 	int intbuffer[4];
 	switch (pname) {
-	case GL_COMPRESSED_TEXTURE_FORMATS:
+	case GL_COMPRESSED_TEXTURE_FORMATS: {
 		std::vector<float> floatData;
 		return Binding::floatVectorToValue(floatData);
+	}
 	case GL_ALIASED_LINE_WIDTH_RANGE:
 	case GL_ALIASED_POINT_SIZE_RANGE:
-	case GL_DEPTH_RANGE:
+	case GL_DEPTH_RANGE: {
 		std::vector<float> floatData;
-		glGetFloatv(pname, floatData.data);
+		glGetFloatv(pname, &floatData[0]);
 		return Binding::floatVectorToValue(floatData);
+	}
 	case GL_BLEND_COLOR:
-	case GL_COLOR_CLEAR_VALUE:
+	case GL_COLOR_CLEAR_VALUE: {
 		std::vector<float> floatData;
-		glGetFloatv(pname, floatData.data);
+		glGetFloatv(pname, &floatData[0]);
 		return Binding::floatVectorToValue(floatData);
-	case GL_MAX_VIEWPORT_DIMS:
+	}
+	case GL_MAX_VIEWPORT_DIMS: {
 		std::vector<int> intData;
-		glGetIntegerv(pname, intData.data);
+		glGetIntegerv(pname, &intData[0]);
 		return Binding::intVectorToValue(intData);
+	}
 	case GL_SCISSOR_BOX:
-	case GL_VIEWPORT:
+	case GL_VIEWPORT: {
 		std::vector<int> intData;
-		glGetIntegerv(pname, intData.data);
+		glGetIntegerv(pname, &intData[0]);
 		return Binding::intVectorToValue(intData);
-	case GL_COLOR_WRITEMASK:
+	}
+	case GL_COLOR_WRITEMASK: {
 		std::vector<bool> mask;
 		glGetIntegerv(pname, intbuffer);
 		for (int i = 0; i < 4; i++) {
 			mask.push_back(intbuffer[i]);
 		}
 		return Binding::boolVectorToValue(mask);
+	}
 	case GL_ARRAY_BUFFER_BINDING:
-	case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+	case GL_ELEMENT_ARRAY_BUFFER_BINDING: {
 		glGetIntegerv(pname, intbuffer);
 		return Binding::intToValue(intbuffer[0]);
-	case GL_CURRENT_PROGRAM:
+	}
+	case GL_CURRENT_PROGRAM: {
 		glGetIntegerv(pname, intbuffer);
 		return Binding::intToValue(intbuffer[0]);
-	case GL_FRAMEBUFFER_BINDING:
+	}
+	case GL_FRAMEBUFFER_BINDING: {
 		glGetIntegerv(pname, intbuffer);
 		return Binding::intToValue(intbuffer[0]);
-	case GL_RENDERBUFFER_BINDING:
+	}
+	case GL_RENDERBUFFER_BINDING: {
 		glGetIntegerv(pname, intbuffer);
 		return Binding::intToValue(intbuffer[0]);
+	}
 	case GL_TEXTURE_BINDING_2D:
-	case GL_TEXTURE_BINDING_CUBE_MAP:
+	case GL_TEXTURE_BINDING_CUBE_MAP: {
 		glGetIntegerv(pname, intbuffer);
 		return Binding::intToValue(intbuffer[0]);
+	}
 	case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
 		return Binding::intToValue(CANVAS_MAX_TEXTURE_UNITS);
 		// TODO: fix these!
@@ -1195,10 +1333,12 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getParameter(JsValueRef c
 	case GL_RENDERER:
 	case GL_SHADING_LANGUAGE_VERSION:
 	case GL_VENDOR:
-	case GL_VERSION:
+	case GL_VERSION: {
 		const wchar_t * str = StringFromAscIIChars((char *)glGetString(pname));
 		return Binding::stringToValue(str, wcslen(str));
 	}
+	}
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getProgramInfoLog(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1275,7 +1415,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getShaderSource(JsValueRe
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getSupportedExtensions(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	std::vector<string> supportedExtensions;
+	std::vector<const wchar_t *> supportedExtensions;
 	return Binding::stringVectorToValue(supportedExtensions);
 }
 
@@ -1296,7 +1436,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getVertexAttrib(JsValueRe
 	}
 	else if (pname == GL_CURRENT_VERTEX_ATTRIB) {
 		vector<int> vec;
-		glGetVertexAttribiv(index, pname, vec.data);
+		glGetVertexAttribiv(index, pname, &vec[0]);
 		return Binding::intVectorToValue(vec);
 	}
 	else {
@@ -1319,6 +1459,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::hint(JsValueRef callee, b
 	GLenum target = Binding::valueToInt(arguments[1]);
 	GLenum mode = Binding::valueToInt(arguments[2]);
 	glHint(target, mode);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::isBuffer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1363,141 +1504,216 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::isTexture(JsValueRef call
 JsValueRef CALLBACK CanvasRenderingContextHolographic::lineWidth(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLfloat width = Binding::valueToFloat(arguments[1]);
 	glLineWidth(width);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::linkProgram(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint program = Binding::valueToInt(arguments[1]);
 	glLinkProgram(program);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::pixelStorei(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLenum pname = Binding::valueToInt(arguments[1]);
 	GLint param = Binding::valueToInt(arguments[2]);
 	glPixelStorei(pname, param);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::polygonOffset(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLfloat factor = Binding::valueToFloat(arguments[1]);
+	GLfloat units = Binding::valueToFloat(arguments[2]);
 	glPolygonOffset(factor, units);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::renderbufferStorage(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum target = Binding::valueToInt(arguments[1]);
+	GLenum internalformat = Binding::valueToInt(arguments[2]);
+	GLsizei width = Binding::valueToInt(arguments[3]);
+	GLsizei height = Binding::valueToInt(arguments[4]);
 	glRenderbufferStorage(target, internalformat, width, height);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::sampleCoverage(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLclampf value = Binding::valueToFloat(arguments[1]);
+	GLboolean invert = Binding::valueToInt(arguments[2]);
 	glSampleCoverage(value, invert);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::scissor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLint x = Binding::valueToInt(arguments[1]);
+	GLint y = Binding::valueToInt(arguments[2]);
+	GLsizei width = Binding::valueToInt(arguments[3]);
+	GLsizei height = Binding::valueToInt(arguments[4]);
 	glScissor(x, y, width, height);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::shaderSource(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
-	std::wstring sourceW(source->Begin());
-	std::string sourceA(sourceW.begin(), sourceW.end());
-	const char* sourceChars = sourceA.c_str();
-	glShaderSource(shader, 1, &sourceChars, nullptr);
+	GLuint shader = Binding::valueToInt(arguments[1]);
+	const wchar_t * source = Binding::valueToString(arguments[2]);
+	const char* sourceChars = AscIICharsFromString(source);
+	const char *sourceArray[1] = { sourceChars };
+	glShaderSource(shader, 1, sourceArray, NULL);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::stencilFunc(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum func = Binding::valueToInt(arguments[1]);
+	GLint ref = Binding::valueToInt(arguments[2]);
+	GLuint mask = Binding::valueToInt(arguments[3]);
 	glStencilFunc(func, ref, mask);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::stencilFuncSeparate(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum face = Binding::valueToInt(arguments[1]);
+	GLenum func = Binding::valueToInt(arguments[2]);
+	GLint ref = Binding::valueToInt(arguments[3]);
+	GLuint mask = Binding::valueToInt(arguments[4]);
 	glStencilFuncSeparate(face, func, ref, mask);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::stencilMask(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLuint mask = Binding::valueToInt(arguments[1]);
 	glStencilMask(mask);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::stencilMaskSeparate(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum face = Binding::valueToInt(arguments[1]);
+	GLuint mask = Binding::valueToInt(arguments[2]);
 	glStencilMaskSeparate(face, mask);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::stencilOp(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum fail = Binding::valueToInt(arguments[1]);
+	GLenum zfail = Binding::valueToInt(arguments[2]);
+	GLenum zpass = Binding::valueToInt(arguments[3]);
 	glStencilOp(fail, zfail, zpass);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::stencilOpSeparate(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum face = Binding::valueToInt(arguments[1]);
+	GLenum fail = Binding::valueToInt(arguments[2]);
+	GLenum zfail = Binding::valueToInt(arguments[3]);
+	GLenum zpass = Binding::valueToInt(arguments[4]);
 	glStencilOpSeparate(face, fail, zfail, zpass);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::texParameterf(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum target = Binding::valueToInt(arguments[1]);
+	GLenum pname = Binding::valueToInt(arguments[2]);
+	GLfloat param = Binding::valueToFloat(arguments[3]);
 	glTexParameterf(target, pname, param);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::texParameteri(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLenum target = Binding::valueToInt(arguments[1]);
+	GLenum pname = Binding::valueToInt(arguments[2]);
+	GLint param = Binding::valueToInt(arguments[3]);
 	glTexParameteri(target, pname, param);
-}
-
-JsValueRef CALLBACK CanvasRenderingContextHolographic::useProgram(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
-	glUseProgram(program);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::uniformMatrix4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLboolean transpose = Binding::valueToInt(arguments[2]);
+	std::vector<float> value = Binding::valueToFloatVector(arguments[3]);
+	int size = sizeof(float) * value.size();
+	glUniformMatrix4fv(location, size, transpose, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
 
-	glUniformMatrix4fv(location, value->Length, transpose, value->Data);
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::useProgram(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLuint program = Binding::valueToInt(arguments[1]);
+	glUseProgram(program);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::validateProgram(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLuint program = Binding::valueToInt(arguments[1]);
 	glValidateProgram(program);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::vertexAttrib1f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
-	glVertexAttrib1f(indx, x);
+	GLuint index = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	glVertexAttrib1f(index, x);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::vertexAttrib2f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
-	glVertexAttrib2f(indx, x, y);
+	GLuint index = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	glVertexAttrib2f(index, x, y);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::vertexAttrib3f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
-	glVertexAttrib3f(indx, x, y, z);
+	GLuint index = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	GLfloat z = Binding::valueToFloat(arguments[4]);
+	glVertexAttrib3f(index, x, y, z);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::vertexAttrib4f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
-	glVertexAttrib4f(indx, x, y, z, w);
+	GLuint index = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	GLfloat z = Binding::valueToFloat(arguments[4]);
+	GLfloat w = Binding::valueToFloat(arguments[5]);
+	glVertexAttrib4f(index, x, y, z, w);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::vertexAttribDivisorANGLE(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLuint index = Binding::valueToInt(arguments[1]);
+	GLuint divisor = Binding::valueToInt(arguments[2]);
 	glVertexAttribDivisorANGLE(index, divisor);
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::vertexAttribPointer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
-	glVertexAttribPointer(indx, size, type, normalized, stride, BUFFER_OFFSET(offset));
+	GLuint index = Binding::valueToInt(arguments[1]);
+	GLint size = Binding::valueToInt(arguments[2]);
+	GLenum type = Binding::valueToInt(arguments[3]);
+	GLboolean normalized = Binding::valueToInt(arguments[4]);
+	GLsizei stride = Binding::valueToInt(arguments[5]);
+	GLint offset = Binding::valueToInt(arguments[6]);
+	glVertexAttribPointer(index, size, type, normalized, stride, BUFFER_OFFSET(offset));
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::viewport(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-
+	GLint x = Binding::valueToInt(arguments[1]);
+	GLint y = Binding::valueToInt(arguments[2]);
+	GLsizei width = Binding::valueToInt(arguments[3]);
+	GLsizei height = Binding::valueToInt(arguments[4]);
 	glViewport(x, y, width, height);
+	return JS_INVALID_REFERENCE;
 }
 
 const char* CanvasRenderingContextHolographic::AscIICharsFromString(const wchar_t * str) {
-	std::wstring strW(str);
-	std::string strA(strW.begin(), strW.end());
-	return strA.c_str();
+	size_t convertedChars = 0;
+	size_t  sizeInBytes = ((wcslen(str) + 1) * 2);
+	errno_t err = 0;
+	char *ch = (char *)malloc(sizeInBytes);
+	wcstombs_s(&convertedChars, ch, sizeInBytes, str, sizeInBytes);
+	return ch;
 }
 
 const wchar_t * CanvasRenderingContextHolographic::StringFromAscIIChars(char* chars) {

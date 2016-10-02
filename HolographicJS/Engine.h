@@ -1,8 +1,10 @@
 ﻿#pragma once
 #define USE_EDGEMODE_JSRT
 #include <jsrt.h>
+#include <queue>
 #include <string>
 #include "Console.h"
+#include "Task.h"
 #include "Window.h"
 
 class Engine
@@ -13,6 +15,7 @@ public:
 
 	Engine(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
 	String^ runScript(const wchar_t * script);
+	queue<Task*> taskQueue;
 private:
 	unsigned currentSourceContext;
 	JsContextRef context;
@@ -20,6 +23,4 @@ private:
 
 	void CreateContext();
 	void ThrowException(wstring errorString);
-
-	JsValueRef CALLBACK JSRequestAnimationFrame(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 };

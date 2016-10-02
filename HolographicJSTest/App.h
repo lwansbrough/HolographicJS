@@ -35,6 +35,9 @@ namespace HolographicJSTest
 
         // The world coordinate system. In this example, a reference frame placed in the environment.
         Windows::Perception::Spatial::SpatialStationaryFrameOfReference^ mStationaryReferenceFrame = nullptr;
+
+		// The HolographicJS host
+		HolographicJS::Host^ holographicJS = nullptr;
     };
 
 }

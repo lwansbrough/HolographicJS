@@ -215,6 +215,7 @@
     <ClInclude Include="Console.h" />
     <ClInclude Include="Host.h" />
     <ClInclude Include="Binding.h" />
+    <ClInclude Include="Task.h" />
     <ClInclude Include="WebGLActiveInfo.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="pch.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Host.cpp" />
     <ClCompile Include="Binding.cpp" />
+    <ClCompile Include="Task.cpp" />
     <ClCompile Include="WebGLActiveInfo.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="pch.cpp">
@@ -244,6 +246,7 @@
     <None Include="libGLESv2.dll">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="SharingManager.js" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
