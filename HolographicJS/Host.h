@@ -3,16 +3,16 @@
 
 using namespace std;
 using namespace Platform;
-using namespace Windows::Graphics::Holographic;
-using namespace Windows::Perception::Spatial;
+using namespace Windows::UI::Core;
 
 namespace HolographicJS {
 	public ref class Host sealed
 	{
 	public:
-		Host(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
+		Host(CoreWindow^ coreWindow);
 
-		String^ RunScript(String^ fileName);
+		void RunScript(String^ fileName);
+		void ProcessNextTask();
 	private:
 		Engine* engine;
 		String^ LoadScript(String^ fileName);

@@ -1,26 +1,24 @@
 #include "pch.h"
 #include "Binding.h"
+#include "CanvasRenderingContextHolographic.h"
 #include <assert.h>
 #include <time.h>
 
 Engine* Binding::engine;
 
-void Binding::bind(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame) {
+void Binding::bind() {
 	JsValueRef globalObject;
 	JsGetGlobalObject(&globalObject);
 
-	JsValueRef jsHolographicSpace;
-	IInspectable* inspectableHolographicSpace = reinterpret_cast<IInspectable*>(holographicSpace);
-	JsInspectableToObject(inspectableHolographicSpace, &jsHolographicSpace);
-	setProperty(globalObject, L"holographicSpace", jsHolographicSpace);
-
-	JsValueRef jsStationaryReferenceFrame;
-	IInspectable* inspectableStationaryReferenceFrame = reinterpret_cast<IInspectable*>(stationaryReferenceFrame);
-	JsInspectableToObject(inspectableStationaryReferenceFrame, &jsStationaryReferenceFrame);
-	setProperty(globalObject, L"stationaryReferenceFrame", jsStationaryReferenceFrame);
+	// Example of how to bind a native inspectable
+	//JsValueRef jsCoreWindow;
+	//IInspectable* inspectableCoreWindow = reinterpret_cast<IInspectable*>(coreWindow);
+	//JsInspectableToObject(inspectableCoreWindow, &jsCoreWindow);
+	//setProperty(globalObject, L"coreWindow", jsCoreWindow);
 
 	setCallback(globalObject, L"setTimeout", JSSetTimeout, nullptr);
 	setCallback(globalObject, L"setInterval", JSSetInterval, nullptr);
+	setCallback(globalObject, L"requestAnimationFrame", JSRequestAnimationFrame, nullptr);
 }
 
 // JsNativeFunction for setTimeout(func, delay)
@@ -42,6 +40,16 @@ JsValueRef CALLBACK Binding::JSSetInterval(JsValueRef callee, bool isConstructCa
 	int delay = 0;
 	JsNumberToInt(arguments[2], &delay);
 	engine->taskQueue.push(new Task(func, delay, arguments[0], JS_INVALID_REFERENCE, true));
+	return JS_INVALID_REFERENCE;
+}
+
+// JsNativeFunction for requestAnimationFrame(func)
+JsValueRef CALLBACK Binding::JSRequestAnimationFrame(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
+{
+	assert(!isConstructCall && argumentCount == 2);
+	CanvasRenderingContextHolographic::render();
+	JsValueRef func = arguments[1];
+	engine->taskQueue.push(new Task(func, 0, arguments[0], JS_INVALID_REFERENCE, true));
 	return JS_INVALID_REFERENCE;
 }
 

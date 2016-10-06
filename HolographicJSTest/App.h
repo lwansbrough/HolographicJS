@@ -30,12 +30,6 @@ namespace HolographicJSTest
         bool mWindowClosed;
         bool mWindowVisible;
 
-        // The holographic space the app will use for rendering.
-        Windows::Graphics::Holographic::HolographicSpace^ mHolographicSpace = nullptr;
-
-        // The world coordinate system. In this example, a reference frame placed in the environment.
-        Windows::Perception::Spatial::SpatialStationaryFrameOfReference^ mStationaryReferenceFrame = nullptr;
-
 		// The HolographicJS host
 		HolographicJS::Host^ holographicJS = nullptr;
     };

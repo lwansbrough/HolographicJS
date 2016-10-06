@@ -3,9 +3,9 @@
 
 using namespace HolographicJS;
 
-Host::Host(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame)
+Host::Host(CoreWindow^ coreWindow)
 {
-	engine = new Engine(holographicSpace, stationaryReferenceFrame);
+	engine = new Engine(coreWindow);
 	engine->runScript(
 		L"const console = new Console();"
 		L"console.log('   __ __     __                        __   _        ______');"
@@ -17,10 +17,14 @@ Host::Host(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference
 	);
 }
 
-String^ Host::RunScript(String^ fileName)
+void Host::RunScript(String^ fileName)
 {
 	String^ script = LoadScript(fileName);
-	return engine->runScript(script->Data());
+	engine->runScript(script->Data());
+}
+
+void Host::ProcessNextTask() {
+	engine->processNextTask();
 }
 
 String^ Host::LoadScript(String^ fileName) {

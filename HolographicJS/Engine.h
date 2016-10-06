@@ -10,21 +10,29 @@ using namespace std;
 using namespace Platform;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
+using namespace Windows::UI::Core;
 
 class Engine
 {
 public:
+	CoreWindow^ coreWindow;
+
+	Engine(CoreWindow^ coreWindow);
+	void runScript(const wchar_t * script);
+	void processNextTask();
+	std::queue<Task*> taskQueue;
 	HolographicSpace^ holographicSpace;
 	SpatialStationaryFrameOfReference^ stationaryReferenceFrame;
-
-	Engine(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
-	String^ runScript(const wchar_t * script);
-	std::queue<Task*> taskQueue;
 private:
 	unsigned currentSourceContext;
 	JsContextRef context;
 	JsRuntimeHandle runtime;
+	EGLDisplay eglDisplay;
+	EGLSurface eglSurface;
+	EGLContext eglContext;
 
-	void CreateContext();
-	static void CALLBACK Engine::PromiseContinuationCallback(JsValueRef task, void *callbackState);
+	void createContext();
+	void Engine::createEGLContext();
+	static void CALLBACK Engine::promiseContinuationCallback(JsValueRef task, void *callbackState);
+	static void OnCameraAdded(Windows::Graphics::Holographic::HolographicSpace ^sender, Windows::Graphics::Holographic::HolographicSpaceCameraAddedEventArgs ^args);
 };

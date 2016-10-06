@@ -53,5 +53,7 @@
       <Filter>Binaries</Filter>
     </None>
     <None Include="app.js" />
+    <None Include="three.js" />
+    <None Include="app.three.js" />
   </ItemGroup>
 </Project>

@@ -127,7 +127,14 @@
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
     </None>
+    <None Include="app.three.js">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="HolographicJSTest_TemporaryKey.pfx" />
+    <None Include="three.js">
+      <DeploymentContent>true</DeploymentContent>
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <ItemGroup Label="ANGLE">
     <None Include="$(AngleBinPath)libEGL.dll">

@@ -67,60 +67,40 @@ void App::SetWindow(CoreWindow^ window)
     window->Closed += 
         ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
 
-    try
-    {
-        // Create a holographic space for the core window for the current view.
-        mHolographicSpace = HolographicSpace::CreateForCoreWindow(window);
-
-        // Get the default SpatialLocator.
-        SpatialLocator^ locator = SpatialLocator::GetDefault();
-
-        // Create a stationary frame of reference.
-        mStationaryReferenceFrame = locator->CreateStationaryFrameOfReferenceAtCurrentLocation();
-    }
-    catch (Platform::Exception^ ex)
-    {
-        if (ex->HResult == HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
-        {
-            // Device does not support holographic spaces. Initialize EGL to use the CoreWindow instead.
-        }
-    }
-}
-
-// Initializes scene resources
-void App::Load(Platform::String^ entryPoint)
-{
 	try {
-		holographicJS = ref new Host(mHolographicSpace, mStationaryReferenceFrame);
+		holographicJS = ref new Host(window);
+		
+		//TODO: tear down holographicJS somewhere
 	}
 	catch (Exception^ e) {
 		OutputDebugString(e->Message->Data());
 	}
 }
 
+// Initializes scene resources
+void App::Load(Platform::String^ entryPoint)
+{
+	//holographicJS->RunScript(L"three.js");
+	//holographicJS->RunScript(L"app.three.js");
+	holographicJS->RunScript(L"app.js");
+}
+
 
 // This method is called after the window becomes active.
 void App::Run()
 {
-	bool hasRun = false;
     while (!mWindowClosed)
     {
         if (mWindowVisible)
         {
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-		
-			if (!hasRun) {
-				holographicJS->RunScript("app.js");
-				hasRun = true;
-			}
+			holographicJS->ProcessNextTask();
 		}
         else
         {
             CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
         }
     }
-
-    // TODO: Clean up HolographicJS here
 }
 
 // Terminate events do not cause Uninitialize to be called. It will be called if your IFrameworkView

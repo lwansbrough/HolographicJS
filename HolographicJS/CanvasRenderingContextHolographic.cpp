@@ -10,6 +10,9 @@ using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
 
 Engine* CanvasRenderingContextHolographic::engine;
+EGLContext CanvasRenderingContextHolographic::eglContext;
+EGLDisplay CanvasRenderingContextHolographic::eglDisplay;
+EGLSurface CanvasRenderingContextHolographic::eglSurface;
 JsValueRef CanvasRenderingContextHolographic::prototype;
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::constructor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
@@ -17,10 +20,10 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::constructor(JsValueRef ca
 	assert(isConstructCall);
 	JsValueRef output = JS_INVALID_REFERENCE;
 
-	HolographicSpace^ holographicSpace = Binding::valueToHolographicSpace(arguments[1]);
-	SpatialStationaryFrameOfReference^ stationaryReferenceFrame = Binding::valueToSpatialStationaryFrameOfReference(arguments[2]);
+	// Example of how to resurrect an iinspectable:
+	// HolographicSpace^ holographicSpace = Binding::valueToHolographicSpace(arguments[1]);
 
-	CanvasRenderingContextHolographic* context = new CanvasRenderingContextHolographic(nullptr, holographicSpace, stationaryReferenceFrame);
+	CanvasRenderingContextHolographic* context = new CanvasRenderingContextHolographic(nullptr);
 	JsCreateExternalObject(context, nullptr, &output);
 	JsSetPrototype(output, CanvasRenderingContextHolographic::prototype);
 
@@ -88,11 +91,13 @@ std::map<const wchar_t *, JsNativeFunction> CanvasRenderingContextHolographic::g
 	members.insert({ L"getBufferParameter", getBufferParameter });
 	members.insert({ L"getParameter", getParameter });
 	members.insert({ L"getError", getError });
+	members.insert({ L"getExtension", getExtension });
 	members.insert({ L"getProgramParameter", getProgramParameter });
 	members.insert({ L"getProgramInfoLog", getProgramInfoLog });
 	members.insert({ L"getShaderParameter", getShaderParameter });
 	members.insert({ L"getShaderInfoLog", getShaderInfoLog });
 	members.insert({ L"getShaderSource", getShaderSource });
+	members.insert({ L"getSupportedExtensions", getSupportedExtensions });
 	members.insert({ L"getUniformLocation", getUniformLocation });
 	members.insert({ L"getVertexAttrib", getVertexAttrib });
 	members.insert({ L"getVertexAttribOffset", getVertexAttribOffset });
@@ -571,196 +576,26 @@ std::map<const wchar_t *, JsValueRef> CanvasRenderingContextHolographic::getProp
 	return properties;
 }
 
-CanvasRenderingContextHolographic::CanvasRenderingContextHolographic(IMapView<String^, Boolean>^ contextAttributes, HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame)
+CanvasRenderingContextHolographic::CanvasRenderingContextHolographic(IMapView<String^, Boolean>^ webGLContextAttributes)
 {
-	createContext(holographicSpace, stationaryReferenceFrame);
-
-	if (eglSwapBuffers(display, surface) != EGL_TRUE) {
-		OutputDebugString(L"\r\n");
-		OutputDebugString(L"Failed to swap buffers. Lost device?");
-	}
+	
 }
 
-void CanvasRenderingContextHolographic::createContext(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame) {
-	const EGLint configAttributes[] =
-	{
-		EGL_RED_SIZE, 8,
-		EGL_GREEN_SIZE, 8,
-		EGL_BLUE_SIZE, 8,
-		EGL_ALPHA_SIZE, 8,
-		EGL_DEPTH_SIZE, 8,
-		EGL_STENCIL_SIZE, 8,
-		EGL_NONE
-	};
-
-	const EGLint contextAttributes[] =
-	{
-		EGL_CONTEXT_CLIENT_VERSION, 2,
-		EGL_NONE
-	};
-
-	const EGLint surfaceAttributes[] =
-	{
-		// EGL_ANGLE_SURFACE_RENDER_TO_BACK_BUFFER is part of the same optimization as EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER (see above).
-		// If you have compilation issues with it then please update your Visual Studio templates.
-		EGL_ANGLE_SURFACE_RENDER_TO_BACK_BUFFER, EGL_TRUE,
-		EGL_NONE
-	};
-
-	const EGLint defaultDisplayAttributes[] =
-	{
-		// These are the default display attributes, used to request ANGLE's D3D11 renderer.
-		// eglInitialize will only succeed with these attributes if the hardware supports D3D11 Feature Level 10_0+.
-		EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
-
-		// EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER is an optimization that can have large performance benefits on mobile devices.
-		// Its syntax is subject to change, though. Please update your Visual Studio templates if you experience compilation issues with it.
-		EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
-
-		// EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE is an option that enables ANGLE to automatically call 
-		// the IDXGIDevice3::Trim method on behalf of the application when it gets suspended. 
-		// Calling IDXGIDevice3::Trim when an application is suspended is a Windows Store application certification requirement.
-		EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE,
-		EGL_NONE,
-	};
-
-	const EGLint fl9_3DisplayAttributes[] =
-	{
-		// These can be used to request ANGLE's D3D11 renderer, with D3D11 Feature Level 9_3.
-		// These attributes are used if the call to eglInitialize fails with the default display attributes.
-		EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
-		EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9,
-		EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE, 3,
-		EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
-		EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE,
-		EGL_NONE,
-	};
-
-	const EGLint warpDisplayAttributes[] =
-	{
-		// These attributes can be used to request D3D11 WARP.
-		// They are used if eglInitialize fails with both the default display attributes and the 9_3 display attributes.
-		EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
-		EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE,
-		EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
-		EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE,
-		EGL_NONE,
-	};
-
-	EGLConfig config = NULL;
-
-	// eglGetPlatformDisplayEXT is an alternative to eglGetDisplay. It allows us to pass in display attributes, used to configure D3D11.
-	PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
-	if (!eglGetPlatformDisplayEXT)
-	{
-		throw Exception::CreateException(E_FAIL, L"Failed to get function eglGetPlatformDisplayEXT");
-	}
-
-	//
-	// To initialize the display, we make three sets of calls to eglGetPlatformDisplayEXT and eglInitialize, with varying 
-	// parameters passed to eglGetPlatformDisplayEXT:
-	// 1) The first calls uses "defaultDisplayAttributes" as a parameter. This corresponds to D3D11 Feature Level 10_0+.
-	// 2) If eglInitialize fails for step 1 (e.g. because 10_0+ isn't supported by the default GPU), then we try again 
-	//    using "fl9_3DisplayAttributes". This corresponds to D3D11 Feature Level 9_3.
-	// 3) If eglInitialize fails for step 2 (e.g. because 9_3+ isn't supported by the default GPU), then we try again 
-	//    using "warpDisplayAttributes".  This corresponds to D3D11 Feature Level 11_0 on WARP, a D3D11 software rasterizer.
-	//
-
-	// This tries to initialize EGL to D3D11 Feature Level 10_0+. See above comment for details.
-	display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, defaultDisplayAttributes);
-	if (display == EGL_NO_DISPLAY)
-	{
-		throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
-	}
-
-	if (eglInitialize(display, NULL, NULL) == EGL_FALSE)
-	{
-		// This tries to initialize EGL to D3D11 Feature Level 9_3, if 10_0+ is unavailable (e.g. on some mobile devices).
-		display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, fl9_3DisplayAttributes);
-		if (display == EGL_NO_DISPLAY)
-		{
-			throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
-		}
-
-		if (eglInitialize(display, NULL, NULL) == EGL_FALSE)
-		{
-			// This initializes EGL to D3D11 Feature Level 11_0 on WARP, if 9_3+ is unavailable on the default GPU.
-			display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, warpDisplayAttributes);
-			if (display == EGL_NO_DISPLAY)
-			{
-				throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
-			}
-
-			if (eglInitialize(display, NULL, NULL) == EGL_FALSE)
-			{
-				// If all of the calls to eglInitialize returned EGL_FALSE then an error has occurred.
-				throw Exception::CreateException(E_FAIL, L"Failed to initialize EGL");
-			}
-		}
-	}
-
-	EGLint numConfigs = 0;
-	if ((eglChooseConfig(display, configAttributes, &config, 1, &numConfigs) == EGL_FALSE) || (numConfigs == 0))
-	{
-		throw Exception::CreateException(E_FAIL, L"Failed to choose first EGLConfig");
-	}
-
-	// Create a PropertySet and initialize with the EGLNativeWindowType.
-	PropertySet^ surfaceCreationProperties = ref new PropertySet();
-	surfaceCreationProperties->Insert(ref new String(EGLNativeWindowTypeProperty), holographicSpace);
-	if (stationaryReferenceFrame != nullptr)
-	{
-		surfaceCreationProperties->Insert(ref new String(EGLBaseCoordinateSystemProperty), stationaryReferenceFrame);
-	}
-
-	// You can configure the surface to render at a lower resolution and be scaled up to
-	// the full window size. This scaling is often free on mobile hardware.
-	//
-	// One way to configure the SwapChainPanel is to specify precisely which resolution it should render at.
-	// Size customRenderSurfaceSize = Size(800, 600);
-	// surfaceCreationProperties->Insert(ref new String(EGLRenderSurfaceSizeProperty), PropertyValue::CreateSize(customRenderSurfaceSize));
-	//
-	// Another way is to tell the SwapChainPanel to render at a certain scale factor compared to its size.
-	// e.g. if the SwapChainPanel is 1920x1280 then setting a factor of 0.5f will make the app render at 960x640
-	// float customResolutionScale = 0.5f;
-	// surfaceCreationProperties->Insert(ref new String(EGLRenderResolutionScaleProperty), PropertyValue::CreateSingle(customResolutionScale));
-
-	surface = eglCreateWindowSurface(display, config, reinterpret_cast<IInspectable*>(surfaceCreationProperties), surfaceAttributes);
-	if (surface == EGL_NO_SURFACE)
-	{
-		throw Exception::CreateException(E_FAIL, L"Failed to create EGL fullscreen surface");
-	}
-
-	context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributes);
-	if (context == EGL_NO_CONTEXT)
-	{
-		throw Exception::CreateException(E_FAIL, L"Failed to create EGL context");
-	}
-
-	if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE)
-	{
-		throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
-	}
-}
-
-JsValueRef CALLBACK CanvasRenderingContextHolographic::render(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	void* self;
-	if (JsGetExternalData(arguments[0], &self) != JsNoError) {
-		return JS_INVALID_REFERENCE;
-	}
-
-	CanvasRenderingContextHolographic* context = static_cast<CanvasRenderingContextHolographic*>(self);
-	if (eglSwapBuffers(context->display, context->surface) != EGL_TRUE) {
+void CanvasRenderingContextHolographic::render() {
+	if (eglSwapBuffers(eglDisplay, eglSurface) != EGL_TRUE) {
 		OutputDebugString(L"\r\n");
 		OutputDebugString(L"Unable to swap buffers.");
 	}
+}
 
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::render(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	JsValueRef jsTime;
 	int currentTime = clock() / (double)(CLOCKS_PER_SEC / 1000);
 	JsIntToNumber(currentTime, &jsTime);
 
 	//JsValueRef args[] = { jsTime };
-	engine->taskQueue.push(new Task(arguments[1], 0, arguments[0], nullptr, false));
+	engine->taskQueue.push(new Task(arguments[1], 0, arguments[0], JS_INVALID_REFERENCE, false));
 
 	return JS_INVALID_REFERENCE;
 }
@@ -931,7 +766,6 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::checkFramebufferStatus(Js
 JsValueRef CALLBACK CanvasRenderingContextHolographic::clear(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLbitfield mask = Binding::valueToInt(arguments[1]);
 	glClear(mask);
-
 	return JS_INVALID_REFERENCE;
 }
 
@@ -1246,7 +1080,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getBufferParameter(JsValu
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getContextAttributes(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	// TODO fix me
 	//return contextAttributes;
-	return nullptr;
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getError(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1254,7 +1088,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getError(JsValueRef calle
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getExtension(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	return nullptr;
+	return JS_INVALID_REFERENCE;
 }
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getParameter(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
@@ -1623,12 +1457,28 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::texParameteri(JsValueRef 
 	return JS_INVALID_REFERENCE;
 }
 
+struct Matrix4
+{
+	Matrix4(float m00, float m01, float m02, float m03,
+		float m10, float m11, float m12, float m13,
+		float m20, float m21, float m22, float m23,
+		float m30, float m31, float m32, float m33)
+	{
+		m[0][0] = m00; m[0][1] = m01; m[0][2] = m02; m[0][3] = m03;
+		m[1][0] = m10; m[1][1] = m11; m[1][2] = m12; m[1][3] = m13;
+		m[2][0] = m20; m[2][1] = m21; m[2][2] = m22; m[2][3] = m23;
+		m[3][0] = m30; m[3][1] = m31; m[3][2] = m32; m[3][3] = m33;
+	}
+
+	float m[4][4];
+};
+
 JsValueRef CALLBACK CanvasRenderingContextHolographic::uniformMatrix4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLint location = Binding::valueToInt(arguments[1]);
 	GLboolean transpose = Binding::valueToInt(arguments[2]);
 	std::vector<float> value = Binding::valueToFloatVector(arguments[3]);
 	int size = sizeof(float) * value.size();
-	glUniformMatrix4fv(location, size, transpose, &value[0]);
+	glUniformMatrix4fv(location, 1, transpose, &value[0]);
 	return JS_INVALID_REFERENCE;
 }
 

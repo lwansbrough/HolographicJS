@@ -7,12 +7,13 @@ using namespace std;
 using namespace Platform;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
+using namespace Windows::UI::Core;
 
 class Binding
 {
 public:
 	static Engine* engine;
-	static void Binding::bind(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
+	static void Binding::bind();
 	static void setCallback(JsValueRef object, const wchar_t *propertyName, JsNativeFunction callback, void *callbackState);
 	static void setProperty(JsValueRef object, const wchar_t *propertyName, JsValueRef property);
 	static JsValueRef getProperty(JsValueRef object, const wchar_t *propertyName);
@@ -43,6 +44,7 @@ public:
 private:
 	static JsValueRef CALLBACK JSSetTimeout(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	static JsValueRef CALLBACK JSSetInterval(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK JSRequestAnimationFrame(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 };
 
 

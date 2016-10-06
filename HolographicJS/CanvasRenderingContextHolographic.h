@@ -25,21 +25,21 @@ class CanvasRenderingContextHolographic
 {
 public:
 	static Engine* engine;
-	CanvasRenderingContextHolographic(IMapView<String^, Boolean>^ contextAttributes, HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
+	static EGLContext eglContext;
+	static EGLDisplay eglDisplay;
+	static EGLSurface eglSurface;
+	CanvasRenderingContextHolographic(IMapView<String^, Boolean>^ webGLContextAttributes);
 
 	static JsValueRef CALLBACK constructor(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	static JsValueRef prototype;
 	static std::map<const wchar_t *, JsNativeFunction> getMembers();
 	static std::map<const wchar_t *, JsValueRef> getProperties();
+	static void render();
 
-	void CanvasRenderingContextHolographic::createContext(HolographicSpace^ holographicSpace, SpatialStationaryFrameOfReference^ stationaryReferenceFrame);
 private:
 	bool unpackFlipY;
 	bool premultiplyAlpha;
-	EGLContext context;
-	EGLDisplay display;
-	EGLSurface surface;
-	static const wchar_t * CanvasRenderingContextHolographic::StringFromAscIIChars(char* chars);
+	static const wchar_t * StringFromAscIIChars(char* chars);
 	static const char* AscIICharsFromString(const wchar_t * str);
 
 	static JsValueRef CALLBACK getContextAttributes(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);

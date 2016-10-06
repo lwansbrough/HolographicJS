@@ -5,10 +5,10 @@ function matrix4(
     m30, m31, m32, m33
 ) {
     return [
-        [m00, m01, m02, m03],
-        [m10, m11, m12, m13],
-        [m20, m21, m22, m23],
-        [m30, m31, m32, m33]
+        m00, m01, m02, m03,
+        m10, m11, m12, m13,
+        m20, m21, m22, m23,
+        m30, m31, m32, m33
     ]
 }
 
@@ -39,7 +39,7 @@ const fragmentShaderSource = `
     }
 `;
 
-const gl = new CanvasRenderingContextHolographic(holographicSpace, stationaryReferenceFrame);
+const gl = new CanvasRenderingContextHolographic();
 
 try {
     function simpleModelMatrix(radians, position) {
@@ -71,14 +71,8 @@ try {
             throw new Error('Failed to create program');
         }
 
-        console.log(`Vertex shader type: ${gl.VERTEX_SHADER}`);
-        console.log(`Fragment shader type: ${gl.FRAGMENT_SHADER}`);
-
         const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
         const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
-
-        console.log(`Vertex shader: ${vertexShader}`);
-        console.log(`Fragment shader: ${fragmentShader}`);
         
         if (vertexShader === 0 || fragmentShader === 0) {
             gl.deleteShader(vertexShader);
@@ -93,9 +87,7 @@ try {
         gl.attachShader(program, fragmentShader);
         gl.deleteShader(fragmentShader);
 
-        console.log(`Linking program: ${program}`);
         gl.linkProgram(program);
-        console.log(`Linked program ${program}`);
 
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
             throw new Error('Could not link the shader program: ' + gl.getProgramInfoLog(program));
@@ -106,21 +98,12 @@ try {
 
     const program = compileProgram(vertexShaderSource, fragmentShaderSource);
 
-    console.log(`Program 1: ${program}`);
-
     const positionAttribLocation = gl.getAttribLocation(program, 'aPosition');
     const colorAttribLocation = gl.getAttribLocation(program, 'aColor');
     const rtvAttribLocation = gl.getAttribLocation(program, 'aRenderTargetArrayIndex');
     const modelUniformLocation = gl.getUniformLocation(program, 'uModelMatrix');
     const viewUniformLocation = gl.getUniformLocation(program, 'uViewMatrix');
     const projUniformLocation = gl.getUniformLocation(program, 'uProjMatrix');
-
-    console.log(`aPosition ${positionAttribLocation}`);
-    console.log(`aColor ${colorAttribLocation}`);
-    console.log(`aRenderTargetArrayIndex ${rtvAttribLocation}`);
-    console.log(`uModelMatrix ${modelUniformLocation}`);
-    console.log(`uViewMatrix ${viewUniformLocation}`);
-    console.log(`uProjMatrix ${projUniformLocation}`);
 
     const halfWidth = 0.1;
     const vertexPositions = Float32Array.from([
@@ -131,7 +114,7 @@ try {
          halfWidth, -halfWidth, -halfWidth,
          halfWidth, -halfWidth,  halfWidth,
          halfWidth,  halfWidth, -halfWidth,
-         halfWidth,  halfWidth,  halfWidth,
+         halfWidth,  halfWidth,  halfWidth
     ]);
 
     const vertexPositionBuffer = gl.createBuffer();
@@ -145,7 +128,7 @@ try {
         0., 1., 1.,
         1., 0., 0.,
         1., 0., 1.,
-        1., 1., 1.,
+        1., 1., 0.,
         1., 1., 1.
     ]);
 
@@ -191,8 +174,6 @@ try {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (program === 0) return;
-
-        console.log(`Program: ${program}`);
         gl.useProgram(program);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexPositionBuffer);
@@ -205,7 +186,7 @@ try {
 
         const position = [0., 0., -2.];
         const modelMatrix = simpleModelMatrix(drawCount / 50, position);
-        gl.uniformMatrix4fv(modelUniformLocation, gl.FALSE, [modelMatrix[0][0]]);
+        gl.uniformMatrix4fv(modelUniformLocation, gl.FALSE, modelMatrix);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, renderTargetArrayIndexBuffer);
         gl.vertexAttribPointer(rtvAttribLocation, 1, gl.FLOAT, gl.FALSE, 0, 0);
@@ -219,19 +200,12 @@ try {
         drawCount += 1;
     }
 
-    function animate() {
+    function animate(time) {
+        requestAnimationFrame(animate);
         draw();
-        gl.render(animate);
     }
 
     animate();
 } catch (e) {
     console.log(e.message);
 }
-
-
-
-
-//const renderingContext = new CanvasRenderingContextHolographic(holographicSpace, stationaryReferenceFrame);
-
-//console.log('Rendering context created.');
