@@ -124,6 +124,8 @@ std::map<const wchar_t *, JsNativeFunction> CanvasRenderingContextHolographic::g
 	members.insert({ L"stencilMaskSeparate", stencilMaskSeparate });
 	members.insert({ L"stencilOp", stencilOp });
 	members.insert({ L"stencilOpSeparate", stencilOpSeparate });
+	members.insert({ L"texImage2D", texImage2D });
+	members.insert({ L"texSubImage2D", texSubImage2D });
 	members.insert({ L"texParameterf", texParameterf });
 	members.insert({ L"texParameteri", texParameteri });
 	members.insert({ L"uniformMatrix4fv", uniformMatrix4fv });
@@ -1170,6 +1172,10 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getParameter(JsValueRef c
 		const wchar_t * str = StringFromAscIIChars((char *)glGetString(pname));
 		return Binding::stringToValue(str, wcslen(str));
 	}
+	default: {
+		glGetIntegerv(pname, intbuffer);
+		return Binding::intToValue(intbuffer[0]);
+	}
 	}
 	return JS_INVALID_REFERENCE;
 }
@@ -1438,6 +1444,27 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::stencilOpSeparate(JsValue
 	GLenum zfail = Binding::valueToInt(arguments[3]);
 	GLenum zpass = Binding::valueToInt(arguments[4]);
 	glStencilOpSeparate(face, fail, zfail, zpass);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::texImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLenum target = Binding::valueToInt(arguments[1]);
+	GLint level = Binding::valueToInt(arguments[2]);
+	GLenum internalformat = Binding::valueToInt(arguments[3]);
+
+	// TODO: Implement
+
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::texSubImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLenum target = Binding::valueToInt(arguments[1]);
+	GLint level = Binding::valueToInt(arguments[2]);
+	GLint xoffset = Binding::valueToInt(arguments[3]);
+	GLint yoffset = Binding::valueToInt(arguments[4]);
+
+	// TODO: Implement
+
 	return JS_INVALID_REFERENCE;
 }
 

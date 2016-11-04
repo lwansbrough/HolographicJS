@@ -244,17 +244,15 @@ private:
 	//GLenum fail, GLenum zfail, GLenum zpass
 	static JsValueRef CALLBACK stencilOpSeparate(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum face, GLenum fail, GLenum zfail, GLenum zpass
-	//static JsValueRef CALLBACK TexImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK texImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, ArrayBufferView ? pixels
-	//static JsValueRef CALLBACK TexImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, TexImageSource ? source // May throw DOMException
 	static JsValueRef CALLBACK texParameterf(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum target, GLenum pname, GLfloat param
 	static JsValueRef CALLBACK texParameteri(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum target, GLenum pname, GLint param
-	//static JsValueRef CALLBACK TexSubImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK texSubImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView ? pixels
-	//static JsValueRef CALLBACK TexSubImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum target, GLint level, GLint xoffset, GLint yoffset, GLenum format, GLenum type, TexImageSource ? source // May throw DOMException
 	//static JsValueRef CALLBACK Uniform1f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLfloat x
@@ -343,9 +341,7 @@ private:
 	//static JsValueRef CALLBACK VertexAttrib4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLuint indx, Float32Array values
 	//static JsValueRef CALLBACK VertexAttrib4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
-	//GLuint indx, sequence<GLfloat> values
 	static JsValueRef CALLBACK vertexAttribDivisorANGLE(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
-	//GLuint index, GLuint divisor
 	static JsValueRef CALLBACK vertexAttribPointer(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset
 	static JsValueRef CALLBACK viewport(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
