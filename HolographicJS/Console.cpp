@@ -34,13 +34,23 @@ std::map<const wchar_t *, JsValueRef> Console::getProperties() {
 }
 
 JsValueRef CALLBACK Console::log(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	OutputDebugString(L"\r\n");
 	std::string entry;
-	for (int i = 1; i <= argumentCount; i++) {
-		// TODO: Create any to string which calls toString on a generic JS object
-		OutputDebugString(Binding::valueToString(arguments[i]));
-		OutputDebugString(L" ");
+	for (int i = 1; i < argumentCount; i++) {
+		if (i > 1)
+		{
+			OutputDebugString(L" ");
+		}
+
+		JsValueRef stringValue;
+		JsConvertValueToString(arguments[i], &stringValue);
+
+		const wchar_t *string;
+		size_t length;
+		JsStringToPointer(stringValue, &string, &length);
+
+		OutputDebugString(string);
 	}
+	OutputDebugString(L"\r\n");
 	
 	return JS_INVALID_REFERENCE;
 }

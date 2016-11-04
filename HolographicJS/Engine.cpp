@@ -245,20 +245,22 @@ void Engine::runScript(const wchar_t * script) {
 		if (JsGetAndClearException(&exception) != JsNoError)
 			throw ref new Exception(-1, L"failed to get and clear exception");
 
-		JsPropertyIdRef messageName;
-		if (JsGetPropertyIdFromName(L"message", &messageName) != JsNoError)
-			throw ref new Exception(-1, L"failed to get error message id");
+		JsPropertyIdRef stackName;
+		if (JsGetPropertyIdFromName(L"stack", &stackName) != JsNoError)
+			throw ref new Exception(-1, L"failed to get stack trace id");
 
-		JsValueRef messageValue;
-		if (JsGetProperty(exception, messageName, &messageValue))
-			throw ref new Exception(-1, L"failed to get error message");
+		JsValueRef stackValue;
+		if (JsGetProperty(exception, stackName, &stackValue))
+			throw ref new Exception(-1, L"failed to get stack trace");
 
-		const wchar_t *message;
-		size_t length;
-		if (JsStringToPointer(messageValue, &message, &length) != JsNoError)
-			throw ref new Exception(-1, L"failed to convert error message");
+		const wchar_t *stack;
+		size_t stackLength;
+		if (JsStringToPointer(stackValue, &stack, &stackLength) != JsNoError)
+			throw ref new Exception(-1, L"failed to convert stack trace");
 
-		OutputDebugString(message);
+		OutputDebugString(L"[JS Error] ");
+		OutputDebugString(stack);
+		OutputDebugString(L"\r\n");
 	}
 }
 
