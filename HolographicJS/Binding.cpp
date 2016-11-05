@@ -344,5 +344,10 @@ JsValueRef Binding::stringVectorToValue(std::vector<const wchar_t *> vec) {
 JsValueRef Binding::webGLActiveInfoToValue(WebGLActiveInfo activeInfo) {
 	JsValueRef value;
 	JsCreateExternalObject(&activeInfo, nullptr, &value);
+
+	setProperty(value, L"type", intToValue(activeInfo.type));
+	setProperty(value, L"name", stringToValue(activeInfo.name, wcslen(activeInfo.name)));
+	setProperty(value, L"size", intToValue(activeInfo.size));
+
 	return value;
 }

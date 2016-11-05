@@ -254,61 +254,51 @@ private:
 	static JsValueRef CALLBACK texSubImage2D(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView ? pixels
 	//GLenum target, GLint level, GLint xoffset, GLint yoffset, GLenum format, GLenum type, TexImageSource ? source // May throw DOMException
-	//static JsValueRef CALLBACK Uniform1f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform1f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLfloat x
-	//static JsValueRef CALLBACK Uniform1fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform1fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Float32Array v
-	//static JsValueRef CALLBACK Uniform1fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<GLfloat> v
-	//static JsValueRef CALLBACK Uniform1i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform1i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLint x
-	//static JsValueRef CALLBACK Uniform1iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform1iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Int32Array v
-	//static JsValueRef CALLBACK Uniform1iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<long> v
-	//static JsValueRef CALLBACK Uniform2f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform2f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLfloat x, GLfloat y
-	//static JsValueRef CALLBACK Uniform2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Float32Array v
-	//static JsValueRef CALLBACK Uniform2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<GLfloat> v
-	//static JsValueRef CALLBACK Uniform2i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform2i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLint x, GLint y
-	//static JsValueRef CALLBACK Uniform2iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform2iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Int32Array v
-	//static JsValueRef CALLBACK Uniform2iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<long> v
-	//static JsValueRef CALLBACK Uniform3f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform3f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLfloat x, GLfloat y, GLfloat z
-	//static JsValueRef CALLBACK Uniform3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Float32Array v
-	//static JsValueRef CALLBACK Uniform3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<GLfloat> v
-	//static JsValueRef CALLBACK Uniform3i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform3i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLint x, GLint y, GLint z
-	//static JsValueRef CALLBACK Uniform3iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform3iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Int32Array v
-	//static JsValueRef CALLBACK Uniform3iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<long> v
-	//static JsValueRef CALLBACK Uniform4f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform4f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLfloat x, GLfloat y, GLfloat z, GLfloat w
-	//static JsValueRef CALLBACK Uniform4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Float32Array v
-	//static JsValueRef CALLBACK Uniform4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<GLfloat> v
-	//static JsValueRef CALLBACK Uniform4i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform4i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLint x, GLint y, GLint z, GLint w
-	//static JsValueRef CALLBACK Uniform4iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniform4iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, Int32Array v
-	//static JsValueRef CALLBACK Uniform4iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, sequence<long> v
-	//static JsValueRef CALLBACK UniformMatrix2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniformMatrix2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLboolean transpose, Float32Array value
-	//static JsValueRef CALLBACK UniformMatrix2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLboolean transpose, sequence<GLfloat> value
-	//static JsValueRef CALLBACK UniformMatrix3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
+	static JsValueRef CALLBACK uniformMatrix3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLboolean transpose, Float32Array value
-	//static JsValueRef CALLBACK UniformMatrix3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//WebGLUniformLocation ? location, GLboolean transpose, sequence<GLfloat> value
 	static JsValueRef CALLBACK uniformMatrix4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLint location, GLboolean transpose, const Array<GLfloat>^ value

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "WebGLActiveInfo.h"
+#include "Binding.h"
 #include <assert.h>
 
 JsValueRef WebGLActiveInfo::prototype;
@@ -10,6 +11,11 @@ JsValueRef CALLBACK WebGLActiveInfo::constructor(JsValueRef callee, bool isConst
 	JsValueRef output = JS_INVALID_REFERENCE;
 	WebGLActiveInfo* activeInfo = new WebGLActiveInfo();
 	JsCreateExternalObject(activeInfo, nullptr, &output);
+
+	Binding::setProperty(output, L"type", Binding::intToValue(activeInfo->type));
+	Binding::setProperty(output, L"name", Binding::stringToValue(activeInfo->name, wcslen(activeInfo->name)));
+	Binding::setProperty(output, L"size", Binding::intToValue(activeInfo->size));
+
 	JsSetPrototype(output, WebGLActiveInfo::prototype);
 	return output;
 }

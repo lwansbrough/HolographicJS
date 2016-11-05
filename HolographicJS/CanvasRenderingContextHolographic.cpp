@@ -128,6 +128,24 @@ std::map<const wchar_t *, JsNativeFunction> CanvasRenderingContextHolographic::g
 	members.insert({ L"texSubImage2D", texSubImage2D });
 	members.insert({ L"texParameterf", texParameterf });
 	members.insert({ L"texParameteri", texParameteri });
+	members.insert({ L"uniform1f", uniform1f });
+	members.insert({ L"uniform2f", uniform2f });
+	members.insert({ L"uniform3f", uniform3f });
+	members.insert({ L"uniform4f", uniform4f });
+	members.insert({ L"uniform1i", uniform1i });
+	members.insert({ L"uniform2i", uniform2i });
+	members.insert({ L"uniform3i", uniform3i });
+	members.insert({ L"uniform4i", uniform4i });
+	members.insert({ L"uniform1fv", uniform1fv });
+	members.insert({ L"uniform2fv", uniform2fv });
+	members.insert({ L"uniform3fv", uniform3fv });
+	members.insert({ L"uniform4fv", uniform4fv });
+	members.insert({ L"uniform1iv", uniform1iv });
+	members.insert({ L"uniform2iv", uniform2iv });
+	members.insert({ L"uniform3iv", uniform3iv });
+	members.insert({ L"uniform4iv", uniform4iv });
+	members.insert({ L"uniformMatrix2fv", uniformMatrix2fv });
+	members.insert({ L"uniformMatrix3fv", uniformMatrix3fv });
 	members.insert({ L"uniformMatrix4fv", uniformMatrix4fv });
 	members.insert({ L"useProgram", useProgram });
 	members.insert({ L"validateProgram", validateProgram });
@@ -1046,6 +1064,10 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getActiveUniform(JsValueR
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getAttribLocation(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint program = Binding::valueToInt(arguments[1]);
 	const wchar_t * name = Binding::valueToString(arguments[2]);
+
+	if (name == NULL) {
+		return JS_INVALID_REFERENCE;
+	}
 	
 	return Binding::intToValue(glGetAttribLocation(program, AscIICharsFromString(name)));
 }
@@ -1261,6 +1283,11 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::getSupportedExtensions(Js
 JsValueRef CALLBACK CanvasRenderingContextHolographic::getUniformLocation(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint program = Binding::valueToInt(arguments[1]);
 	const wchar_t * name = Binding::valueToString(arguments[2]);
+
+	if (name == NULL) {
+		return JS_INVALID_REFERENCE;
+	}
+
 	return Binding::intToValue(glGetUniformLocation(program, AscIICharsFromString(name)));
 }
 
@@ -1500,7 +1527,139 @@ struct Matrix4
 	float m[4][4];
 };
 
-JsValueRef CALLBACK CanvasRenderingContextHolographic::uniformMatrix4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform1f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	glUniform1f(location, x);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform1fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<float> value = Binding::valueToFloatVector(arguments[2]);
+	int size = sizeof(float) * value.size();
+	glUniform1fv(location, 1, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform1i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	glUniform1i(location, x);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform1iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<int> value = Binding::valueToIntVector(arguments[2]);
+	int size = sizeof(int) * value.size();
+	glUniform1iv(location, 1, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform2f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	glUniform2f(location, x, y);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<float> value = Binding::valueToFloatVector(arguments[2]);
+	int size = sizeof(float) * value.size();
+	glUniform2fv(location, 2, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform2i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	glUniform2i(location, x, y);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform2iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<int> value = Binding::valueToIntVector(arguments[2]);
+	int size = sizeof(int) * value.size();
+	glUniform2iv(location, 2, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform3f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	GLfloat z = Binding::valueToFloat(arguments[4]);
+	glUniform3f(location, x, y, z);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<float> value = Binding::valueToFloatVector(arguments[2]);
+	int size = sizeof(float) * value.size();
+	glUniform3fv(location, 3, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform3i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	GLfloat z = Binding::valueToFloat(arguments[4]);
+	glUniform3i(location, x, y, z);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform3iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<int> value = Binding::valueToIntVector(arguments[2]);
+	int size = sizeof(int) * value.size();
+	glUniform3iv(location, 3, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform4f(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	GLfloat z = Binding::valueToFloat(arguments[4]);
+	GLfloat w = Binding::valueToFloat(arguments[5]);
+	glUniform4f(location, x, y, z, w);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<float> value = Binding::valueToFloatVector(arguments[2]);
+	int size = sizeof(float) * value.size();
+	glUniform4fv(location, 4, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform4i(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLfloat x = Binding::valueToFloat(arguments[2]);
+	GLfloat y = Binding::valueToFloat(arguments[3]);
+	GLfloat z = Binding::valueToFloat(arguments[4]);
+	GLfloat w = Binding::valueToFloat(arguments[5]);
+	glUniform4i(location, x, y, z, w);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniform4iv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	std::vector<int> value = Binding::valueToIntVector(arguments[2]);
+	int size = sizeof(int) * value.size();
+	glUniform4iv(location, 4, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniformMatrix2fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLint location = Binding::valueToInt(arguments[1]);
 	GLboolean transpose = Binding::valueToInt(arguments[2]);
 	std::vector<float> value = Binding::valueToFloatVector(arguments[3]);
@@ -1509,6 +1668,23 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::uniformMatrix4fv(JsValueR
 	return JS_INVALID_REFERENCE;
 }
 
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniformMatrix3fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLboolean transpose = Binding::valueToInt(arguments[2]);
+	std::vector<float> value = Binding::valueToFloatVector(arguments[3]);
+	int size = sizeof(float) * value.size();
+	glUniformMatrix3fv(location, 1, transpose, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
+
+JsValueRef CALLBACK CanvasRenderingContextHolographic::uniformMatrix4fv(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
+	GLint location = Binding::valueToInt(arguments[1]);
+	GLboolean transpose = Binding::valueToInt(arguments[2]);
+	std::vector<float> value = Binding::valueToFloatVector(arguments[3]);
+	int size = sizeof(float) * value.size();
+	glUniformMatrix4fv(location, 1, transpose, &value[0]);
+	return JS_INVALID_REFERENCE;
+}
 
 JsValueRef CALLBACK CanvasRenderingContextHolographic::useProgram(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
 	GLuint program = Binding::valueToInt(arguments[1]);
