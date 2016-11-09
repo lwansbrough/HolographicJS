@@ -1,6 +1,6 @@
 # HolographicJS
 
-A C++ Windows Runtime Component for hosting Windows Holographic built with Javascript and WebGL.
+A C++ Windows Runtime Component for hosting Windows Holographic apps built with Javascript and WebGL.
 
 ## Purpose
 
