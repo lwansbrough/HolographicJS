@@ -27,6 +27,53 @@ The goal of this project is to achieve rendering holograms using Javascript with
    - `app.js` is a demonstration of a plain holographic WebGL app in JS
    - `app.three.js` is a work in progress demonstration of ThreeJS support
 
+## Example
+
+This is an example of how HolographicJS can be used within a Universal Windows app.
+
+```c++
+
+// Called when the CoreWindow object is created (or re-created).
+void App::SetWindow(CoreWindow^ window)
+{
+    window->VisibilityChanged +=
+        ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &App::OnVisibilityChanged);
+
+    window->Closed += 
+        ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
+
+	try {
+		holographicJS = ref new Host(window);
+	}
+	catch (Exception^ e) {
+		OutputDebugString(e->Message->Data());
+	}
+}
+
+// Initializes scene resources
+void App::Load(Platform::String^ entryPoint)
+{
+	holographicJS->RunScript(L"app.js");
+}
+
+// This method is called after the window becomes active.
+void App::Run()
+{
+    while (!mWindowClosed)
+    {
+        if (mWindowVisible)
+        {
+			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+			holographicJS->ProcessNextTask();
+		}
+        else
+        {
+            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
+        }
+    }
+}
+```
+
 ## Notes
 
 - This library is completely devoid of memory management. I'm not a C++ developer so I've left memory management as an excercise for later
