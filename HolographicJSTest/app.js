@@ -23,7 +23,7 @@ const vertexShaderSource = `
     varying float vRenderTargetArrayIndex;
     void main() {
         int arrayIndex = int(aRenderTargetArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
-        gl_Position = uHolographicViewProjectionMatrix[arrayIndex]* uModelMatrix * aPosition;
+        gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
         vColor = aColor;
         vRenderTargetArrayIndex = aRenderTargetArrayIndex;
     }
@@ -195,7 +195,7 @@ try {
         gl.vertexAttribDivisorANGLE(rtvAttribLocation, 1);
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.drawElementsInstancedANGLE(gl.TRIANGLES, (6 * 2) * 3, gl.UNSIGNED_SHORT, 0, 2);
+        gl.drawElements(gl.TRIANGLES, (6 * 2) * 3, gl.UNSIGNED_SHORT, 0);
 
         drawCount += 1;
     }

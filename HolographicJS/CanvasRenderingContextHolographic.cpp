@@ -75,7 +75,6 @@ std::map<const wchar_t *, JsNativeFunction> CanvasRenderingContextHolographic::g
 	members.insert({ L"disableVertexAttribArray", disableVertexAttribArray });
 	members.insert({ L"drawArrays", drawArrays });
 	members.insert({ L"drawElements", drawElements });
-	members.insert({ L"drawElementsInstancedANGLE", drawElementsInstancedANGLE });
 	members.insert({ L"enable", enable });
 	members.insert({ L"enableVertexAttribArray", enableVertexAttribArray });
 	members.insert({ L"finish", finish });
@@ -942,7 +941,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::drawArrays(JsValueRef cal
 	GLenum mode = Binding::valueToInt(arguments[1]);
 	GLint first = Binding::valueToInt(arguments[2]);
 	GLsizei count = Binding::valueToInt(arguments[3]);
-	glDrawArrays(mode, first, count);
+	glDrawArraysInstancedANGLE(mode, first, count, 2);
 	return JS_INVALID_REFERENCE;
 }
 
@@ -951,17 +950,7 @@ JsValueRef CALLBACK CanvasRenderingContextHolographic::drawElements(JsValueRef c
 	GLsizei count = Binding::valueToInt(arguments[2]);
 	GLenum type = Binding::valueToInt(arguments[3]);
 	GLint offset = Binding::valueToInt(arguments[4]);
-	glDrawElements(mode, count, type, BUFFER_OFFSET(offset));
-	return JS_INVALID_REFERENCE;
-}
-
-JsValueRef CALLBACK CanvasRenderingContextHolographic::drawElementsInstancedANGLE(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState) {
-	GLenum mode = Binding::valueToInt(arguments[1]);
-	GLsizei count = Binding::valueToInt(arguments[2]);
-	GLenum type = Binding::valueToInt(arguments[3]);
-	GLint offset = Binding::valueToInt(arguments[4]);
-	GLsizei primcount = Binding::valueToInt(arguments[5]);
-	glDrawElementsInstancedANGLE(mode, count, type, BUFFER_OFFSET(offset), primcount);
+	glDrawElementsInstancedANGLE(mode, count, type, BUFFER_OFFSET(offset), 2);
 	return JS_INVALID_REFERENCE;
 }
 

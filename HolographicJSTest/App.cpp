@@ -80,9 +80,7 @@ void App::SetWindow(CoreWindow^ window)
 // Initializes scene resources
 void App::Load(Platform::String^ entryPoint)
 {
-	holographicJS->RunScript(L"three.js");
-	holographicJS->RunScript(L"app.three.js");
-	//holographicJS->RunScript(L"app.js");
+	holographicJS->RunScript(L"app.js");
 }
 
 

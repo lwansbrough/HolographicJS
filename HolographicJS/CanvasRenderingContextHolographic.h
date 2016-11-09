@@ -143,8 +143,6 @@ private:
 	//GLenum mode, GLint first, GLsizei count
 	static JsValueRef CALLBACK drawElements(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum mode, GLsizei count, GLenum type, GLint offset
-	static JsValueRef CALLBACK drawElementsInstancedANGLE(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
-	//GLenum mode, GLsizei count, GLenum type, GLint offset, GLsizei primcount
 	static JsValueRef CALLBACK enable(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
 	//GLenum cap
 	static JsValueRef CALLBACK enableVertexAttribArray(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
