@@ -25,6 +25,8 @@ Engine::Engine(CoreWindow^ coreWindow) {
 
 void Engine::createContext() {
 
+	bool debug = true;
+
 	currentSourceContext = 0;
 
 	if (JsCreateRuntime(JsRuntimeAttributeNone, nullptr, &runtime) != JsNoError)
@@ -38,6 +40,9 @@ void Engine::createContext() {
 
 	if (JsSetPromiseContinuationCallback(promiseContinuationCallback, &taskQueue) != JsNoError)
 		throw ref new Exception(-1, L"Failed to set up promise continuations.");
+
+	if (debug && JsStartDebugging() != JsNoError)
+		throw ref new Exception(-1, L"Failed to start debugging.");
 
 	CanvasRenderingContextHolographic::engine = this;
 	CanvasRenderingContextHolographic::eglContext = eglContext;
