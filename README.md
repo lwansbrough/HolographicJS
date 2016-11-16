@@ -6,7 +6,7 @@ A C++ Windows Runtime Component for hosting Windows Holographic apps built with 
 
 To provide a familiar environment for web developers who are interested in holographic development for Microsoft HoloLens and Windows Holographic.
 
-![Demonstration of HolographicJS](https://media.giphy.com/media/pBi3srjdbMg3S/giphy.gif)
+![Demonstration of HolographicJS](/demo.gif?raw=true)
 
 ## Approach
 
