@@ -46,14 +46,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="HolographicJSTest_TemporaryKey.pfx" />
-    <None Include="$(AngleBinPath)libEGL.dll">
-      <Filter>Binaries</Filter>
-    </None>
-    <None Include="$(AngleBinPath)libGLESv2.dll">
-      <Filter>Binaries</Filter>
-    </None>
     <None Include="app.js" />
     <None Include="three.js" />
     <None Include="app.three.js" />
+    <None Include="..\HolographicJS\libEGL.dll">
+      <Filter>Binaries</Filter>
+    </None>
+    <None Include="..\HolographicJS\libGLESv2.dll">
+      <Filter>Binaries</Filter>
+    </None>
   </ItemGroup>
 </Project>
