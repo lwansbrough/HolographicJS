@@ -1,6 +1,6 @@
 # Help wanted with Three.js support
 
-Knowledgeable about HoloLens and Three.js? You're a rare breed, and I could use your help! Three.js support probably won't be available unless I can get some help. Please see #2 for more information!
+Knowledgeable about HoloLens (and/or OpenGL 3D middleware development) and Three.js? You're a rare breed, and I could use your help! Three.js support probably won't be available unless I can get some help. Please see issue [#2](https://github.com/lwansbrough/HolographicJS/issues/2) for more information!
 
 # HolographicJS
 
@@ -88,5 +88,8 @@ void App::Run()
 
 ## Roadmap
 
+In no particular order:
+
 - [ ] Implement entire WebGL 1.x spec
 - [ ] Provide high level interfaces for spatial mapping, shared experiences
+- [ ] Three.js support
