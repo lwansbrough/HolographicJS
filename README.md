@@ -1,3 +1,7 @@
+# Help wanted with Three.js support
+
+Knowledgeable about HoloLens and Three.js? You're a rare breed, and I could use your help! Three.js support probably won't be available unless I can get some help. Please see #2 for more information!
+
 # HolographicJS
 
 A C++ Windows Runtime Component for hosting Windows Holographic apps built with Javascript and WebGL.
