@@ -92,5 +92,6 @@ In no particular order:
 
 - [ ] Implement entire WebGL 1.x spec
 - [ ] Port to C++/WinRT for improved performance
+- [ ] Remove Edge Mode Chakra dependency
 - [ ] Provide high level interfaces for spatial mapping, shared experiences
 - [ ] Three.js support
