@@ -10,13 +10,13 @@ A C++ Windows Runtime Component for hosting Windows Holographic apps built with 
 
 To provide a familiar environment for web developers who are interested in holographic development for Microsoft HoloLens and Windows Holographic.
 
+![Demonstration of HolographicJS](/demo.gif?raw=true)
+
 ## Notes/Warnings
 
 - This library is completely devoid of memory management. I'm not a C++ developer so I've left memory management as an excercise for later
 - `libEGL.dll` and `libGLES.dll` were compiled using [Microsoft's fork of ANGLE with support for Windows Holographic](https://github.com/microsoft/angle/tree/ms-holographic-experimental)
 - At the moment, shaders for specific libraries have to be updated to support holographics
-
-![Demonstration of HolographicJS](/demo.gif?raw=true)
 
 ## Approach
 
