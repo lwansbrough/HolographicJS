@@ -4,6 +4,8 @@ Knowledgeable about HoloLens (and/or OpenGL 3D middleware development) and Three
 
 # HolographicJS
 
+[![Join the chat at https://gitter.im/HolographicJS](https://badges.gitter.im/HolographicJS.svg)](https://gitter.im/HolographicJS?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A C++ Windows Runtime Component for hosting Windows Holographic apps built with Javascript and WebGL.
 
 ## Purpose
