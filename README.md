@@ -1,6 +1,7 @@
-# Help wanted with Three.js support
+# Microsoft has released an official replacement for this library
 
-Knowledgeable about HoloLens (and/or OpenGL 3D middleware development) and Three.js? You're a rare breed, and I could use your help! Three.js support probably won't be available unless I can get some help. Please see issue [#2](https://github.com/lwansbrough/HolographicJS/issues/2) for more information!
+Stunning work by some of the folks at MS who have put together their vision for what this library should be. The result is nearly identical, so I'm recommending their library over this one.
+https://github.com/microsoft/holojs
 
 # HolographicJS
 
